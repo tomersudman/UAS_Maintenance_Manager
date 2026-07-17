@@ -301,19 +301,30 @@ async function pullData(){
   }
   return null;
 }
-async function pollLoop(){
+let _lastPoll=0;
+async function pollOnce(){
   if(!CLOUD_ON()||!USER)return;
+  if(Date.now()-_lastPoll<3000)return;
+  _lastPoll=Date.now();
   try{
     if(!AP&&!S.modal&&CHANGES.length===0){
       const resp=await api({action:'poll'});
       if(resp.ok&&resp.version>SRV_VERSION){
         const l=await pullData();
-        if(l)render();
+        if(l){
+          render();
+          if(USER.role==='ADMIN')showNewActivity(l.log);
+        }
       }
     }
   }catch(e){}
-  setTimeout(pollLoop,30000);
 }
+async function pollLoop(){
+  await pollOnce();
+  setTimeout(pollLoop,10000);
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollOnce();});
+window.addEventListener('focus',()=>pollOnce());
 function updSyncDot(){
   const el=document.getElementById('syncdot');
   if(!el)return;
@@ -401,6 +412,7 @@ async function afterLogin(){
   if(USER.role==='ADMIN')showNewActivity(l?l.log:[]);
 }
 function showNewActivity(log){
+  if(document.querySelector('.log-ov'))return;
   const last=+localStorage.getItem('uas_lastlog')||0;
   const fresh=(log||[]).filter(e=>e.ts>last&&e.name!==USER.name);
   if(!fresh.length)return;
