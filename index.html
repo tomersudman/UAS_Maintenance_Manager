@@ -2,6 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="theme-color" content="#0d1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="UAS Manager">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>UAS Maintenance Manager — Hermes 900</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -247,6 +252,22 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
   .tbl-wrap table{min-width:max-content}
   #bxl,#bbk,#brs{display:none}
 }
+
+@media(max-width:820px){
+  /* Freeze header row + first column inside scrollable tables (Google-Sheets style) */
+  .pvt-lg thead th,.pvt thead th,.dt-c thead th,.ov-block table thead th{position:sticky;top:0;z-index:3}
+  .pvt-lg tr>*:first-child,.pvt tr>*:first-child,.dt-c tr>*:first-child,.ov-block table tr>*:first-child{position:sticky;left:0;z-index:2}
+  .pvt-lg thead th:first-child,.pvt thead th:first-child,.dt-c thead th:first-child,.ov-block table thead th:first-child{z-index:4}
+  .pvt-lg tr>td:first-child,.pvt tr>td:first-child{background:var(--bg4)}
+  .dt-c tr>td:first-child{background:var(--bg3)}
+  .ov-block table tr>td:first-child{background:var(--bg4)}
+  .tbl-scroll{max-height:75vh;overflow:auto}
+  /* App feel */
+  .ed{-webkit-tap-highlight-color:transparent}
+  .ed:active{background:rgba(56,139,253,.18)!important;transition:background .05s}
+  .ov-block,.tbl-wrap{border-radius:10px}
+  .content{padding-bottom:30px}
+}
 </style></head><body>
 <div class="app" id="app"></div><script>
 /* ═══ CONSTANTS ═══ */
@@ -482,7 +503,7 @@ const RRQ_ST=['OPEN','CLOSED','ARRIVED','REQUESTED'];
 const BASES=[...UAV_SITES,'Other'];
 const PAYLOAD_OPTS=['','T80','Rafts','None'];
 const OBJ_OPTS=['Achieved','Not Achieved','Partial','Training','Transit','Patrol','ISR'];
-const FAULT_SYS=['Airframe','Engine','Avionics','Payload','GCS','GDT','Communication','Fuel','Electrical','Other'];
+const FAULT_SYS=['Structural','Engine','Avionics','Payload','GCS','GDT','Communication','Fuel','Electrical','Other'];
 const SB_ST=['Open','Closed','Pending','N/A'];
 const SVC_OPTS=['YES','NO','PARTIALLY'];
 const TABS=[
@@ -1612,14 +1633,24 @@ function renderModal(){
     g(f('Objective',sel('objective',['Achieved','Not Achieved','Partial','Training','Transit'],r.objective)),
       f('Remarks / Failures',inp('remarks',r.remarks)));
 
+  const sysOpts=(()=>{const L=[];const dd=S.data;
+    dd.uavs.forEach(u=>L.push('UAV '+u.tail));
+    dd.engines.forEach(e=>L.push('Engine '+e.num));
+    dd.gcs.forEach(g2=>L.push('GCS '+g2.unit));
+    dd.gdt.forEach(g2=>L.push('GDT '+g2.unit));
+    dd.satcoms.forEach(s2=>L.push('Satcom '+s2.name));
+    dd.opats.forEach(o=>L.push('OPATS '+o.sn));
+    dd.gse_gens.forEach(g2=>L.push(g2.item));
+    dd.flt.forEach(f2=>L.push(f2.item));
+    dd.payloads.forEach(p=>L.push((p.type+' '+(p.sn||'#'+p.id)).trim()));
+    L.push('Other');return L;})();
   const faultForm=g(f('Date',inp('date',toI(r.date),'date')),
-    f('UAV',sel('uav',UAV_NUMS.concat(['Other']),r.uav)),
-    f('System',sel('system',FAULT_SYS,r.system)))+
+    f('System S/N',sel('uav',sysOpts,r.uav)),
+    f('Fault Type',sel('system',FAULT_SYS,r.system)))+
     g(f('Subsystem',inp('subsystem',r.subsystem)),
       f('S/N',inp('sn',r.sn)),
       f('TIF #',inp('tif',r.tif)))+
-    g(f('Sent to Repair',sel('sentRepair',['YES','NO'],r.sentRepair||'NO')),
-      f('Remarks',inp('remarks',r.remarks)));
+    g(f('Remarks',inp('remarks',r.remarks)));
 
   const forms={
     tif:g(f('TIF Date (leave blank for today)',inp('date',toI(r.date),'date')),f('Description',inp('desc',r.desc)),f('Category',sel('cat',CATS,r.cat))),
@@ -1860,7 +1891,11 @@ function bindAll(){
     const a=el.dataset.a,id=el.dataset.id?+el.dataset.id:null;
     const d=S.data;
     if(a==='close'){S.modal=null;S.edit=null;tpClose();render();return}
-    if((a.startsWith('add-')||a.startsWith('del-')||a==='save')&&!canAdmin()){toast('🔒 Admin only');return;}
+    if((a.startsWith('add-')||a.startsWith('del-')||a==='save')&&!canAdmin()){
+      const isOp=USER&&USER.role==='OPERATOR';
+      const opOk=isOp&&(a==='add-flight'||a==='add-fault'||(a==='save'&&(el.dataset.t==='flight'||el.dataset.t==='fault')));
+      if(!opOk){toast('🔒 Admin only');return;}
+    }
     if(a==='add-epart-row'){
       const type=el.dataset.eptype;
       const maxId=d.eparts.reduce((m,p)=>Math.max(m,p.id),0);
