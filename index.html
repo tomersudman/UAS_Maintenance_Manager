@@ -267,8 +267,17 @@ const LBL_FIELD={uavs:'tail',engines:'num',gcs:'unit',gdt:'unit',satcoms:'name',
 const OP_BLOCKED_EK=['sn','num','item','unit','name','tail'];
 
 function unitLabel(lk,unit){const f=LBL_FIELD[lk];return (unit&&f&&unit[f])?unit[f]:('#'+(unit?unit.id:'?'));}
+const EK_LABELS={monthly:'Monthly inspection',q3:'3-Month inspection',q6:'6-Month inspection',qtr:'Quarterly inspection',annual:'Annual inspection',pitot3y:'Pitot/Fuel & Air Tube 3Y',cor5y:'Corrosion 5Y',ff200:'Fuel Filters 200H threshold',fpr8y:'Fuel Pressure Regulator 8Y',vt8y:'V-Tail 10Y',vt4k:'V-Tail 6000H threshold',mlgr:'R-MLG 10Y',mlgl:'L-MLG 10Y',bat3y:'UPS Battery 3Y',bat2y:'Battery 2Y',cbat5y:'Comp Battery 5Y',sixMonthly:'6-Month check',coolant2y:'Coolant 2Y',prop700:'Propeller 700H threshold',prop4y:'Propeller 4Y',rub5y:'Rubber Parts 5Y',pres:'Preservation 1Y',calib:'Annual calibration',oh50:'50H OH threshold',oh100:'100H OH threshold',oh200:'200H OH threshold',oh300:'300H OH threshold',oh900:'900H OH threshold',svc:'Serviceable',remarks:'Remarks',hrs:'Engine hours',fh:'Flight hours',loc:'Location',site:'Location',uav:'Assigned UAV',status:'Status',date:'Date',reply:'Reply date',shipped:'Shipped',invoice:'Invoice',arrived:'Arrived',t3y:'3Y Treatment',sn:'S/N',num:'Number',item:'Item name',engOH:'Engine OH @ assembly',itemOH:'Item OH',dateAcc:'Date accepted',snSent:'S/N sent',snRcvd:'S/N received',qtyRcvd:'Qty received',desc:'Description',note:'Note',tif:'TIF #',urgent:'Urgent'};
+function prettyVal(v){
+  if(v===true)return'YES';
+  if(v===false)return'NO';
+  if(v===''||v===null||v===undefined)return'(cleared)';
+  if(/^\d{4}-\d{2}-\d{2}$/.test(String(v)))return fmtD(v);
+  return String(v);
+}
 function logChange(lk,unit,ek,oldV,newV){
-  const desc=`${LIST_NAMES[lk]||lk} ${unitLabel(lk,unit)} → ${ek} = ${newV===true?'YES':newV===false?'NO':(newV||'empty')} (was: ${oldV===true?'YES':oldV===false?'NO':(oldV||'empty')})`;
+  const fld=EK_LABELS[ek]||ek;
+  const desc=`${LIST_NAMES[lk]||lk} ${unitLabel(lk,unit)} — ${fld}: ${prettyVal(newV)}`;
   CHANGES.push({ts:Date.now(),desc});
   schedulePush();
 }
@@ -304,7 +313,7 @@ async function pullData(){
 let _lastPoll=0;
 async function pollOnce(){
   if(!CLOUD_ON()||!USER)return;
-  if(Date.now()-_lastPoll<3000)return;
+  if(Date.now()-_lastPoll<2000)return;
   _lastPoll=Date.now();
   try{
     if(!AP&&!S.modal&&CHANGES.length===0){
@@ -321,7 +330,7 @@ async function pollOnce(){
 }
 async function pollLoop(){
   await pollOnce();
-  setTimeout(pollLoop,10000);
+  setTimeout(pollLoop,5000);
 }
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)pollOnce();});
 window.addEventListener('focus',()=>pollOnce());
@@ -414,12 +423,22 @@ async function afterLogin(){
 function showNewActivity(log){
   if(document.querySelector('.log-ov'))return;
   const last=+localStorage.getItem('uas_lastlog')||0;
-  const fresh=(log||[]).filter(e=>e.ts>last&&e.name!==USER.name);
+  const fresh=(log||[]).filter(e=>e.ts>last&&(e.name!==USER.name||e.role!==USER.role));
   if(!fresh.length)return;
   const ov=document.createElement('div');ov.className='log-ov';
+  const roleClr=r=>r==='ADMIN'?'#388bfd':r==='OPERATOR'?'var(--green)':'var(--text3)';
+  const tfmt=ts=>{const d=new Date(ts);const today=new Date();const same=d.toDateString()===today.toDateString();
+    return (same?'Today':d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}))+' '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});};
   ov.innerHTML=`<div class="log-box">
-    <h2>🔔 New Activity (${fresh.length})</h2>
-    <div class="log-list">${fresh.map(e=>`<div class="log-item"><div class="lt">${new Date(e.ts).toLocaleString('en-GB')} · ${e.name} (${e.role})</div><div class="ld">${e.desc}</div></div>`).join('')}</div>
+    <h2>🔔 New Activity <span style="font-size:11px;color:var(--text3);font-weight:400">(${fresh.length} update${fresh.length>1?'s':''})</span></h2>
+    <div class="log-list">${fresh.map(e=>`
+      <div class="log-item" style="display:flex;gap:10px;align-items:flex-start;padding:10px 8px">
+        <span style="width:8px;height:8px;border-radius:50%;background:${roleClr(e.role)};margin-top:5px;flex-shrink:0"></span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:12px;color:var(--text);line-height:1.45">${e.desc}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:3px"><b style="color:${roleClr(e.role)}">${e.name}</b> · ${e.role.charAt(0)+e.role.slice(1).toLowerCase()} · ${tfmt(e.ts)}</div>
+        </div>
+      </div>`).join('')}</div>
     <button class="btn primary" id="lgok" style="justify-content:center">OK, Got it</button>
   </div>`;
   document.body.appendChild(ov);
