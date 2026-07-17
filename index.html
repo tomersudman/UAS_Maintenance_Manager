@@ -266,7 +266,8 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
   .ed{-webkit-tap-highlight-color:transparent}
   .ed:active{background:rgba(56,139,253,.18)!important;transition:background .05s}
   .ov-block,.tbl-wrap{border-radius:10px}
-  .content{padding-bottom:30px}
+  .ov-stats{display:none}
+  .content{padding-bottom:calc(130px + env(safe-area-inset-bottom))}
 }
 </style></head><body>
 <div class="app" id="app"></div><script>
@@ -283,6 +284,20 @@ let SRV_VERSION=0;        // last known server version
 let SYNC_STATE='off';     // off|ok|saving|error
 let pushTimer=null;
 const CLOUD_ON=()=>API_URL&&!API_URL.startsWith('PASTE');
+const NEED_SCRIPT_V=3;
+function checkScriptVersion(resp){
+  if(!resp)return;
+  const cur=+resp.sv||0;
+  let b=document.getElementById('svwarn');
+  if(cur<NEED_SCRIPT_V){
+    if(!b){
+      b=document.createElement('div');b.id='svwarn';
+      b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:6000;background:#5a1e1e;color:#ffb4b4;font-size:12px;font-weight:600;padding:8px 12px;text-align:center;border-bottom:1px solid #a33';
+      b.textContent='⚠ Google Script is OUTDATED (v'+cur+', need v'+NEED_SCRIPT_V+') — paste the new Code.gs, then Deploy → Manage deployments → ✏ Edit → Version: New version → Deploy. Sync will stay slow until then.';
+      document.body.appendChild(b);
+    }
+  }else if(b)b.remove();
+}
 
 const LIST_NAMES={uavs:'UAV',engines:'Engine',gcs:'GCS',gdt:'GDT',satcoms:'Satcom',payloads:'Payload',eparts:'Engine Part',flt:'FLT',gse_gens:'Generator',opats:'OPATS',gse_tools:'Tool',tifs:'TIF',sbs:'SB',rmas:'RMA',rrqs:'RRQ',flights:'Flight',faults:'Fault'};
 const LBL_FIELD={uavs:'tail',engines:'num',gcs:'unit',gdt:'unit',satcoms:'name',payloads:'sn',eparts:'sn',flt:'item',gse_gens:'item',opats:'sn',gse_tools:'item',tifs:'num',sbs:'num',rmas:'form',rrqs:'form',flights:'date',faults:'date'};
@@ -319,7 +334,11 @@ async function pushSave(){
   if(!CLOUD_ON()||!USER)return;
   try{
     const lists=CHANGED_KEYS.has('__all__')?null:Array.from(CHANGED_KEYS);
+    const t0=Date.now();
     const resp=await api({action:'save',pwd:USER.pwd,name:USER.name,data:S.data,changes:CHANGES,lists});
+    const dur=((Date.now()-t0)/1000).toFixed(1);
+    console.log('[sync] save took '+dur+'s, lists:',lists);
+    if(+dur>10)toast('⚠ Save took '+dur+'s — Apps Script probably outdated');
     if(resp.ok){SRV_VERSION=resp.version;CHANGES=[];CHANGED_KEYS.clear();SYNC_STATE='ok';}
     else{SYNC_STATE='error';toast('⚠ Sync failed: '+(resp.err||''));}
   }catch(e){SYNC_STATE='error';toast('⚠ Offline - will retry');setTimeout(pushSave,8000);}
@@ -327,6 +346,7 @@ async function pushSave(){
 }
 async function pullData(){
   const resp=await api({action:'load'});
+  checkScriptVersion(resp);
   if(resp.ok){
     if(resp.data){S.data=resp.data;sv(S.data);}
     SRV_VERSION=resp.version||0;
@@ -342,6 +362,7 @@ async function pollOnce(){
   try{
     if(!AP&&!S.modal&&CHANGES.length===0){
       const resp=await api({action:'poll'});
+      checkScriptVersion(resp);
       if(resp.ok&&resp.version>SRV_VERSION){
         const l=await pullData();
         if(l){
@@ -1112,7 +1133,7 @@ function pgHome(){
   return`
   <div class="ph"><div><div class="ph-title">Overview — Hermes 900 Fleet</div>
   <div class="ph-sub">Updated ${TODAY.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div></div>
-  <div class="stat-strip">
+  <div class="stat-strip ov-stats">
     <div class="stat-item"><div class="stat-label">Svc UAVs</div><div class="stat-val" style="color:${svc>=6?'var(--green)':svc>=4?'var(--yellow)':'var(--red)'}">${svc}${part?`<span style="font-size:13px;opacity:.6">+${part}P</span>`:''}</div></div>
     <div class="stat-div"></div>
     <div class="stat-item"><div class="stat-label">Open TIFs</div><div class="stat-val" style="color:${openTIF<=2?'var(--green)':openTIF<=4?'var(--yellow)':'var(--red)'}">${openTIF}</div></div>
@@ -1816,7 +1837,7 @@ function render(){
       </div>
       <div class="nav-scroll"><div style="display:flex">${TABS.map(t=>`<div class="tab${S.tab===t.id?' on':''}" data-tab="${t.id}">${t.l}</div>`).join('')}</div></div>
       <div class="nav-btns">
-        <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid var(--gbd,#236b30);color:var(--green);background:#0d2b1a;margin-right:4px"><span class="sync-dot" id="syncdot" style="background:var(--text3);margin-right:0"></span><span id="synclbl">Live</span></span>
+        <span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid var(--gbd,#236b30);color:var(--green);background:#0d2b1a;margin-right:4px"><span class="sync-dot" id="syncdot" style="background:var(--text3);margin-right:0"></span><span id="synclbl">Live</span></span><span style="font-size:8px;color:var(--text3);margin-right:4px">v3</span>
         ${USER?`<div style="text-align:right;margin-right:8px;line-height:1.3"><div style="font-size:12px;font-weight:600;color:var(--text)">Welcome, ${USER.name}</div><div style="font-size:10px;font-weight:600;color:${USER.role==='ADMIN'?'#388bfd':USER.role==='OPERATOR'?'var(--green)':'var(--text3)'}">${USER.role.charAt(0)+USER.role.slice(1).toLowerCase()}</div></div>`:''}
         ${canAdmin()?`<button class="nbtn" id="bxl">⬇ Excel</button>
         <button class="nbtn gold" id="bbk">💾 Backup</button>
