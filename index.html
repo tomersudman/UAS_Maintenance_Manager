@@ -278,6 +278,7 @@ const MS=864e5;
 const API_URL='https://script.google.com/macros/s/AKfycbwoRhcG8vujzhhGHT4YgjepivKU4JkSNMMbtzMueTdrqF_usIIorODgmQJK2_0XU_-q/exec'; // <-- paste your Apps Script Web App URL between the quotes
 let USER=null;            // {name, role, pwd}
 let CHANGES=[];           // pending change descriptions
+let CHANGED_KEYS=new Set(); // which data lists changed (for fast partial save)
 let SRV_VERSION=0;        // last known server version
 let SYNC_STATE='off';     // off|ok|saving|error
 let pushTimer=null;
@@ -300,9 +301,10 @@ function logChange(lk,unit,ek,oldV,newV){
   const fld=EK_LABELS[ek]||ek;
   const desc=`${LIST_NAMES[lk]||lk} ${unitLabel(lk,unit)} — ${fld}: ${prettyVal(newV)}`;
   CHANGES.push({ts:Date.now(),desc});
+  CHANGED_KEYS.add(lk);
   schedulePush();
 }
-function logAction(desc){CHANGES.push({ts:Date.now(),desc});schedulePush();}
+function logAction(desc,lk){CHANGES.push({ts:Date.now(),desc});CHANGED_KEYS.add(lk||'__all__');schedulePush();}
 function schedulePush(){
   if(!CLOUD_ON()||!USER)return;
   SYNC_STATE='saving';updSyncDot();
@@ -316,8 +318,9 @@ async function api(body){
 async function pushSave(){
   if(!CLOUD_ON()||!USER)return;
   try{
-    const resp=await api({action:'save',pwd:USER.pwd,name:USER.name,data:S.data,changes:CHANGES});
-    if(resp.ok){SRV_VERSION=resp.version;CHANGES=[];SYNC_STATE='ok';}
+    const lists=CHANGED_KEYS.has('__all__')?null:Array.from(CHANGED_KEYS);
+    const resp=await api({action:'save',pwd:USER.pwd,name:USER.name,data:S.data,changes:CHANGES,lists});
+    if(resp.ok){SRV_VERSION=resp.version;CHANGES=[];CHANGED_KEYS.clear();SYNC_STATE='ok';}
     else{SYNC_STATE='error';toast('⚠ Sync failed: '+(resp.err||''));}
   }catch(e){SYNC_STATE='error';toast('⚠ Offline - will retry');setTimeout(pushSave,8000);}
   updSyncDot();
@@ -690,6 +693,7 @@ function openPopup(el,uid,lk,ek,type){
     unit[ek]=v;
     if(lk==='engines'&&ek==='num'&&oldV&&oldV!==v){
       S.data.eparts.forEach(p=>{if(p.engSt===oldV)p.engSt=v;});
+      CHANGED_KEYS.add('eparts');
     }
     logChange(lk,unit,ek,oldV,v);
     sv(S.data);closePopup();render();toast('Saved!');
@@ -1686,7 +1690,7 @@ function exportExcel(){
   XLSX.writeFile(wb,`UAS_Export_${new Date().toISOString().slice(0,10)}.xlsx`);toast('Excel exported!');
 }
 function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'}));a.download=`UAS_Backup_${new Date().toISOString().slice(0,10)}.json`;a.click();toast('Backup saved!');}
-function restore(file){const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.uavs){S.data=d;sv(d);render();toast('Restored!')}else alert('Invalid backup.')}catch(err){alert('Error: '+err.message)}};rd.readAsText(file);}
+function restore(file){const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.uavs){S.data=d;sv(d);logAction('Restored backup');render();toast('Restored!')}else alert('Invalid backup.')}catch(err){alert('Error: '+err.message)}};rd.readAsText(file);}
 
 /* ═══ MAIN RENDER & BIND ═══ */
 function tpClose(){
@@ -1900,7 +1904,7 @@ function bindAll(){
       const type=el.dataset.eptype;
       const maxId=d.eparts.reduce((m,p)=>Math.max(m,p.id),0);
       d.eparts.push({id:maxId+1,type,sn:'',uav:'',engSt:'',loc:'U-Tapao',svc:'YES',itemOH:0,engOH:0,toOH:0,dateAcc:'',remarks:''});
-      logAction(`Added Engine Part row (${type})`);
+      logAction(`Added Engine Part row (${type})`,'eparts');
       sv(d);render();toast('Row added');return;
     }
     if(a==='save'){
@@ -1908,13 +1912,13 @@ function bindAll(){
       if(list){
         if(S.edit&&S.edit.id){
           const idx=list.findIndex(r=>r.id===S.edit.id);
-          if(idx>=0){list[idx]={...S.edit,...fd};logAction(`Edited ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,list[idx])}`);}
+          if(idx>=0){list[idx]={...S.edit,...fd};logAction(`Edited ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,list[idx])}`,lk2);}
         }
         else{
           const newItem={id:nid(list),...fd};
           if(t==='tif'){newItem.num=String(d.tifs.length+1);newItem.status='Open';if(!newItem.date)newItem.date=new Date().toISOString().slice(0,10);}
           list.push(newItem);
-          logAction(`Added ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,newItem)}`);
+          logAction(`Added ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,newItem)}`,lk2);
         }
       }
       sv(d);S.modal=null;S.edit=null;render();toast('Saved!');return;
