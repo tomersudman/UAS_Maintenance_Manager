@@ -73,7 +73,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .pvt-lg td.dc.ed{cursor:pointer;transition:filter .1s}
 .pvt-lg td.dc.ed:hover{filter:brightness(1.2);outline:1px solid var(--gold3)}
 .pvt-lg tr.sep td,.pvt-lg tr.sep th{background:#111827;color:#8ea0b8;font-size:9px;font-weight:700;padding:3px 9px;border:1px solid rgba(255,255,255,.06);letter-spacing:.06em;text-transform:uppercase}
-.pvt-lg tr.eng-row td,.pvt-lg tr.eng-row th{background:rgba(74,144,217,.07)}
+.pvt-lg tr.pvt-lg tr.eng-row td.rl{background:#1d2a3a}
 .pvt-lg .cell-d{font-size:12px;font-weight:700;line-height:1.15;display:block}
 .pvt-lg .cell-s{font-size:9px;font-weight:400;opacity:.7;display:block;margin-top:1px}
 .pvt{border-collapse:collapse;font-size:10px}
@@ -86,7 +86,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .pvt td.dc{border:1px solid var(--border);text-align:center;padding:2px 4px;white-space:nowrap;vertical-align:middle}
 .pvt td.dc.ed{cursor:pointer;transition:filter .1s}.pvt td.dc.ed:hover{filter:brightness(1.2);outline:1px solid var(--gold3)}
 .pvt tr.sep td,.pvt tr.sep th{background:#111827;color:#8ea0b8;font-size:8px;font-weight:700;padding:2px 6px;border:1px solid rgba(255,255,255,.06);letter-spacing:.06em;text-transform:uppercase}
-.pvt tr.eng-row td,.pvt tr.eng-row th{background:rgba(74,144,217,.07)}
+.pvt tr.pvt tr.eng-row td.rl{background:#1d2a3a}
 .pvt .cell-d{font-size:10px;font-weight:700;line-height:1.1;display:block}
 .pvt .cell-s{font-size:7px;font-weight:400;opacity:.7;display:block;margin-top:1px}
 .cg{background:rgba(46,168,107,.19);color:#5dd899}
@@ -307,7 +307,7 @@ const LBL_FIELD={uavs:'tail',engines:'num',gcs:'unit',gdt:'unit',satcoms:'name',
 const OP_BLOCKED_EK=['sn','num','item','unit','name','tail'];
 
 function unitLabel(lk,unit){const f=LBL_FIELD[lk];return (unit&&f&&unit[f])?unit[f]:('#'+(unit?unit.id:'?'));}
-const EK_LABELS={monthly:'Monthly inspection',q3:'3-Month inspection',q6:'6-Month inspection',qtr:'Quarterly inspection',annual:'Annual inspection',pitot3y:'Pitot/Fuel & Air Tube 3Y',cor5y:'Corrosion 5Y',ff200:'Fuel Filters 200H threshold',fpr8y:'Fuel Pressure Regulator 8Y',vt8y:'V-Tail 10Y',vt4k:'V-Tail 6000H threshold',mlgr:'R-MLG 10Y',mlgl:'L-MLG 10Y',bat3y:'UPS Battery 3Y',bat2y:'Battery 2Y',cbat5y:'Comp Battery 5Y',sixMonthly:'6-Month check',coolant2y:'Coolant 2Y',prop700:'Propeller 700H threshold',prop4y:'Propeller 4Y',rub5y:'Rubber Parts 5Y',pres:'Preservation 1Y',calib:'Annual calibration',oh50:'50H OH threshold',oh100:'100H OH threshold',oh200:'200H OH threshold',oh300:'300H OH threshold',oh900:'900H OH threshold',svc:'Serviceable',remarks:'Remarks',hrs:'Engine hours',fh:'Flight hours',loc:'Location',site:'Location',uav:'Assigned UAV',status:'Status',date:'Date',reply:'Reply date',shipped:'Shipped',invoice:'Invoice',arrived:'Arrived',t3y:'3Y Treatment',sn:'S/N',num:'Number',item:'Item name',engOH:'Engine OH @ assembly',itemOH:'Item OH',dateAcc:'Date accepted',snSent:'S/N sent',snRcvd:'S/N received',qtyRcvd:'Qty received',desc:'Description',note:'Note',tif:'TIF #',urgent:'Urgent'};
+const EK_LABELS={monthly:'Monthly inspection',q3:'3-Month inspection',q6:'6-Month inspection',qtr:'Quarterly inspection',annual:'Annual inspection',pitot3y:'Pitot/Fuel & Air Tube 3Y',cor5y:'Corrosion 5Y',ff200:'Fuel Filters 200H threshold',fpr8y:'Fuel Pressure Regulator 8Y',vt8y:'V-Tail 10Y',vt4k:'V-Tail 6000H threshold',mlgr:'R-MLG 10Y',mlgl:'L-MLG 10Y',bat3y:'UPS Battery 3Y',bat2y:'Battery 2Y',cbat5y:'Comp Battery 5Y',sixMonthly:'6-Month check',coolant2y:'Coolant 2Y',prop700:'Propeller 700H threshold',prop4y:'Propeller 4Y',rub5y:'Rubber Parts 5Y',pres:'Preservation 1Y',calib:'Annual calibration',oh25done:'25H OH (one-time)',oh50:'50H OH threshold',oh100:'100H OH threshold',oh200:'200H OH threshold',oh300:'300H OH threshold',oh900:'900H OH threshold',svc:'Serviceable',remarks:'Remarks',hrs:'Engine hours',fh:'Flight hours',loc:'Location',site:'Location',uav:'Assigned UAV',status:'Status',date:'Date',reply:'Reply date',shipped:'Shipped',invoice:'Invoice',arrived:'Arrived',t3y:'3Y Treatment',sn:'S/N',num:'Number',item:'Item name',engOH:'Engine OH @ assembly',itemOH:'Item OH',dateAcc:'Date accepted',snSent:'S/N sent',snRcvd:'S/N received',qtyRcvd:'Qty received',desc:'Description',note:'Note',tif:'TIF #',urgent:'Urgent'};
 function prettyVal(v){
   if(v===true)return'YES';
   if(v===false)return'NO';
@@ -393,6 +393,7 @@ function canEdit(ek,lk){
   if(!CLOUD_ON())return true;
   if(!USER)return false;
   if(USER.role==='VIEWER')return false;
+  if(USER.role==='OPERATOR'&&lk==='eparts')return true;
   if(USER.role==='OPERATOR'&&OP_BLOCKED_EK.includes(ek))return false;
   return true;
 }
@@ -512,7 +513,7 @@ function boot(){
   }else showLogin();
 }
 
-const UAV_SITES=['U-Tapao','Songkhla'];
+const UAV_SITES=['U-Tapao','Songkhla','Israel'];
 const GCS_SITES=['U-Tapao','Sattahip','Songkhla'];
 const ENG_LOCS=['U-Tapao','Songkhla','Israel'];
 const GSE_LOCS=['U-Tapao','Songkhla'];
@@ -522,7 +523,7 @@ const UAV_NUMS=['1436','1437','1438','1439','1440','1441','1442'];
 const GCS_NUMS=['750','751','IGCS'];
 const GDT_NUMS=['002','003'];
 const PAY_TYPES=['Spectro','T80'];
-const EPART_TYPES=['Propeller','Carburetor 1/3','Carburetor 2/4','EGT Harness','Alternator'];
+const EPART_TYPES=['Propeller','Carburetor 1/3','Carburetor 2/4','EGT Harness','Alternator Plate'];
 const EPART_LOCS=['U-Tapao','Songkhla','Israel'];
 const CATS=['UAV','GCS','GDT','ENGINE','GSE','PAYLOAD','FLIGHT'];
 const TIF_ST=['Open','Closed','Answered','AI','Awaiting Parts'];
@@ -585,8 +586,8 @@ function hourTdUAV(thresh,fh,ek,uid,lk,editable=false){
   const main=rem===null?'—':fmtHHMM(rem);
   return`<td class="dc ${cl}${editable?' ed':''}"${editable?` data-ek="${ek}" data-id="${uid}" data-list="${lk}" data-type="hhmm"`:''}><span class="cell-d">${main}</span><span class="cell-s">@${fmtHHMM(thresh)||'—'}</span></td>`
 }
-function hourTdEng(thresh,hrs,ek,uid,lk,editable=false){
-  const rem=engHL(thresh,hrs);const intv=+thresh||100;const cl=cHour(rem,intv);
+function hourTdEng(thresh,hrs,ek,uid,lk,editable=false,intvO=null){
+  const rem=engHL(thresh,hrs);const intv=intvO||+thresh||100;const cl=cHour(rem,intv);
   const main=rem===null?'—':fmtHHMM(rem);
   return`<td class="dc ${cl}${editable?' ed':''}"${editable?` data-ek="${ek}" data-id="${uid}" data-list="${lk}" data-type="hhmm"`:''}><span class="cell-d">${main}</span><span class="cell-s">@${fmtHHMM(thresh)||'—'}</span></td>`
 }
@@ -633,7 +634,8 @@ function openPopup(el,uid,lk,ek,type){
     select_base:BASES,
     select_payload:PAYLOAD_OPTS,
     select_objective:OBJ_OPTS,
-    select_fault_sys:FAULT_SYS
+    select_fault_sys:FAULT_SYS,
+    select_eng_sn:S.data.engines.map(e=>e.num).concat(['Storage','Israel'])
   };
 
   if(selectMap[type]){
@@ -742,7 +744,7 @@ function defD(){
   const uavBase=(id,tail,site)=>({id,tail,site,svc:'YES',fh:0,remarks:'',
     monthly:'',q3:'',q6:'',ff200:200,pitot3y:'',fpr8y:'',
     cor5y:'',vt8y:'',vt4k:6000,mlgr:'',mlgl:''});
-  const engBase=(id,num,uav,loc)=>({id,num,uav,loc,svc:'YES',hrs:0,remarks:'',
+  const engBase=(id,num,uav,loc)=>({id,num,uav,loc,svc:'YES',hrs:0,remarks:'',oh25done:false,
     oh50:50,oh100:100,oh200:200,oh300:300,oh900:900,prop700:700,
     rub5y:'',pres:'',prop4y:'',coolant2y:'',egth:'',alt:''});
   return{
@@ -870,12 +872,21 @@ function pgHome(){
     {lbl:'R-MLG 10Y',freq:'10y',type:'date',key:'mlgr'},
     {lbl:'L-MLG 10Y',freq:'10y',type:'date',key:'mlgl'},
     {sep:'ENGINE (installed)'},
+    {lbl:'25H OH (once)',type:'engOnce',key:'oh25done'},
     {lbl:'→50H OH',type:'engOH',key:'oh50',intv:50},
     {lbl:'→100H OH',type:'engOH',key:'oh100',intv:100},
     {lbl:'→200H OH',type:'engOH',key:'oh200',intv:200},
-    {lbl:'→Prop 700H',type:'engOH',key:'prop700',intv:700},
-    {lbl:'Preservation',freq:'1y',type:'engDate',key:'pres'},
+    {lbl:'→300H OH',type:'engOH',key:'oh300',intv:300},
+    {lbl:'→900H OH',type:'engOH',key:'oh900',intv:900},
+    {lbl:'→Prop 700H',type:'comp',ctype:'Propeller'},
+    {lbl:'→Carb 1/3',type:'comp',ctype:'Carburetor 1/3'},
+    {lbl:'→Carb 2/4',type:'comp',ctype:'Carburetor 2/4'},
+    {lbl:'→EGT Harness',type:'comp',ctype:'EGT Harness'},
+    {lbl:'→Alternator Plate',type:'comp',ctype:'Alternator Plate'},
+    {lbl:'Coolant 2Y',freq:'2y',type:'engDate',key:'coolant2y'},
+    {lbl:'Propeller Repl. 4Y',freq:'4y',type:'engDate',key:'prop4y'},
     {lbl:'Rubber 5Y',freq:'5y',type:'engDate',key:'rub5y'},
+    {lbl:'Preservation 1Y',freq:'1y',type:'engDate',key:'pres'},
   ];
 
   function getEng(u){return d.engines.find(e=>e.uav===u.tail)}
@@ -891,8 +902,22 @@ function pgHome(){
     if(row.type==='engHrs')return`<td class="dc cn"><span class="cell-d">${e?fmtHHMM(+e.hrs):'—'}</span></td>`;
     if(row.type==='date')return dateTd(u[row.key],row.freq,null,u.id,'uavs',false);
     if(row.type==='huav')return hourTdUAV(u[row.key],u.fh,null,u.id,'uavs',false);
-    if(row.type==='engOH'){if(!e)return`<td class="dc cn"><span class="cell-d">—</span></td>`;return hourTdEng(e[row.key],e.hrs,null,e.id,'engines',false);}
+    if(row.type==='engOH'){if(!e)return`<td class="dc cn"><span class="cell-d">—</span></td>`;return hourTdEng(e[row.key],e.hrs,null,e.id,'engines',false,row.intv);}
+    if(row.type==='comp'){
+      if(!e)return`<td class="dc cn"><span class="cell-d">—</span></td>`;
+      const cp=d.eparts.find(p=>(p.type===row.ctype||(row.ctype==='Alternator Plate'&&p.type==='Alternator'))&&p.engSt===e.num);
+      if(!cp)return`<td class="dc cn"><span class="cell-d">—</span></td>`;
+      const _iv=row.ctype==='Propeller'?700:row.ctype==='Alternator Plate'?300:200;
+      const _rm=_iv-(+cp.itemOH||0)+(+cp.engOH||0);
+      return`<td class="dc ${cHour(_rm,_iv)}"><span class="cell-d">${fmtHHMM(_rm)}</span><span class="cell-s">@${fmtHHMM(_iv)}</span></td>`;
+    }
     if(row.type==='engDate'){if(!e)return`<td class="dc cn"><span class="cell-d">—</span></td>`;return dateTd(e[row.key],row.freq,null,e.id,'engines',false);}
+    if(row.type==='engOnce'){
+      if(!e)return`<td class="dc cn"><span class="cell-d">—</span></td>`;
+      if(e[row.key])return`<td class="dc cg"><span class="cell-d">✔ Done</span></td>`;
+      const r25=25-(+e.hrs||0);
+      return`<td class="dc ${r25<=0?'cr':r25<=5?'co':'cy'}"><span class="cell-d">${fmtHHMM(r25)}</span><span class="cell-s">to 25H</span></td>`;
+    }
     return`<td class="dc cn">—</td>`;
   }
 
@@ -903,7 +928,7 @@ function pgHome(){
   </tr></thead><tbody>`;
   uRows.forEach(r=>{
     if(r.sep){uTbl+=`<tr class="sep"><td colspan="${1+d.uavs.length}"><span class="seplbl">${r.sep}</span></td></tr>`;return;}
-    const isEng=r.type==='engOH'||r.type==='engDate';
+    const isEng=r.type==='engOH'||r.type==='engDate'||r.type==='comp'||r.type==='engOnce';
     uTbl+=`<tr${isEng?' class="eng-row"':''}><td class="rl">${r.lbl}</td>${d.uavs.map(u=>uCell(u,r)).join('')}</tr>`;
   });
   uTbl+=`</tbody></table></div>`;
@@ -1250,6 +1275,7 @@ function pgEng(){
     {lbl:'UAV',type:'uav'},{lbl:'Location',type:'loc'},{lbl:'Serviceable',type:'svc'},
     {lbl:'Remarks',type:'remarks'},{lbl:'Engine Hours',type:'fh'},
     {sep:'OH INTERVALS (next threshold)'},
+    {lbl:'25H OH (one-time)',type:'once',key:'oh25done'},
     {lbl:'Next 50H OH',type:'oh',key:'oh50',intv:50},{lbl:'Next 100H OH',type:'oh',key:'oh100',intv:100},
     {lbl:'Next 200H OH',type:'oh',key:'oh200',intv:200},{lbl:'Next 300H OH',type:'oh',key:'oh300',intv:300},
     {lbl:'Next 900H OH',type:'oh',key:'oh900',intv:900},
@@ -1257,29 +1283,35 @@ function pgEng(){
     {lbl:'Carburetor 1/3',type:'comp',ctype:'Carburetor 1/3'},
     {lbl:'Carburetor 2/4',type:'comp',ctype:'Carburetor 2/4'},
     {lbl:'EGT Harness',type:'comp',ctype:'EGT Harness'},
-    {lbl:'Alternator',type:'comp',ctype:'Alternator'},
+    {lbl:'Alternator Plate',type:'comp',ctype:'Alternator Plate'},
     {lbl:'Propeller 700H',type:'comp',ctype:'Propeller'},
     {sep:'REPLACEMENTS'},
     {lbl:'Coolant 2Y',freq:'2y',type:'date',key:'coolant2y'},
-    {lbl:'Propeller Repl. 700H',type:'oh',key:'prop700',intv:700},
     {lbl:'Propeller Repl. 4Y',freq:'4y',type:'date',key:'prop4y'},
     {lbl:'Rubber Parts 5Y',freq:'5y',type:'date',key:'rub5y'},
     {lbl:'Preservation 1Y',freq:'1y',type:'date',key:'pres'},
   ];
-  function getComp(e,ctype){return d.eparts.find(p=>p.type===ctype&&(p.uav===e.uav||p.engSt===e.num))}
+  function getComp(e,ctype){return d.eparts.find(p=>(p.type===ctype||(ctype==='Alternator Plate'&&p.type==='Alternator'))&&p.engSt===e.num)}
   function eCell(e,row){
-    if(row.type==='uav')return`<td class="dc cn ed" data-ek="uav" data-id="${e.id}" data-list="engines" data-type="text"><span class="cell-d" style="font-size:9px">${e.uav||'STORAGE'}</span></td>`;
-    if(row.type==='loc')return`<td class="dc cn ed" data-ek="loc" data-id="${e.id}" data-list="engines" data-type="select_eng_loc"><span class="cell-d" style="font-size:9px">${e.loc||'—'}</span></td>`;
+    if(row.type==='uav')return`<td class="dc cn ed" data-ek="uav" data-id="${e.id}" data-list="engines" data-type="select_uav"><span class="cell-d" style="font-size:12px">${e.uav||'STORAGE'}</span></td>`;
+    if(row.type==='loc')return`<td class="dc cn ed" data-ek="loc" data-id="${e.id}" data-list="engines" data-type="select_eng_loc"><span class="cell-d" style="font-size:12px">${e.loc||'—'}</span></td>`;
     if(row.type==='svc')return`<td class="dc ${svcCl(e.svc)} ed" data-ek="svc" data-id="${e.id}" data-list="engines" data-type="select_svc"><span class="cell-d">${e.svc}</span></td>`;
     if(row.type==='remarks'){const preview=e.remarks?e.remarks.slice(0,12)+'…':'—';return`<td class="dc cn ed" data-ek="remarks" data-id="${e.id}" data-list="engines" data-type="textarea"><span class="cell-d" style="font-size:9px">${preview}</span></td>`;}
     if(row.type==='fh')return`<td class="dc cn ed" data-ek="hrs" data-id="${e.id}" data-list="engines" data-type="hhmm"><span class="cell-d">${fmtHHMM(+e.hrs)||'00:00'}</span></td>`;
-    if(row.type==='oh')return hourTdEng(e[row.key],e.hrs,row.key,e.id,'engines',true);
+    if(row.type==='once'){
+      if(e[row.key])return`<td class="dc cg ed" data-ek="${row.key}" data-id="${e.id}" data-list="engines" data-type="checkbox_bool"><span class="cell-d">✔ Done</span></td>`;
+      const rem25=25-(+e.hrs||0);
+      return`<td class="dc ${rem25<=0?'cr':rem25<=5?'co':'cy'} ed" data-ek="${row.key}" data-id="${e.id}" data-list="engines" data-type="checkbox_bool"><span class="cell-d">${fmtHHMM(rem25)}</span><span class="cell-s">to 25H insp.</span></td>`;
+    }
+    if(row.type==='oh')return hourTdEng(e[row.key],e.hrs,row.key,e.id,'engines',true,row.intv);
     if(row.type==='date')return dateTd(e[row.key],row.freq,row.key,e.id,'engines',true);
     if(row.type==='comp'){
       const cp=getComp(e,row.ctype);
       if(!cp)return`<td class="dc cn"><span class="cell-d" style="font-size:8px">—</span></td>`;
-      const rem=engHL(cp.toOH,e.hrs);const cl=cHour(rem,+cp.toOH||200);
-      return`<td class="dc ${cl}"><span class="cell-d">${fmtHHMM(rem)}</span><span class="cell-s">@${fmtHHMM(+cp.toOH)||'—'}</span></td>`;
+      const intv=row.ctype==='Propeller'?700:row.ctype==='Alternator Plate'?300:200;
+      const rem=intv-(+cp.itemOH||0)+(+cp.engOH||0);
+      const cl=cHour(rem,intv);
+      return`<td class="dc ${cl}"><span class="cell-d">${fmtHHMM(rem)}</span><span class="cell-s">@${fmtHHMM(intv)}</span></td>`;
     }
     return`<td class="dc cn">—</td>`;
   }
@@ -1298,32 +1330,28 @@ function pgEng(){
 }
 function pgEParts(){
   const d=S.data;
-  const cols=['Type','S/N','UAV','Location','Svc','Item OH','Eng OH@Asm','Next OH (HH:MM)','Time to OH','Date Acc.','Remarks',''];
+  const cols=['Type','S/N','Engine S/N','Location','Svc','Item OH','Eng OH@Asm','Time to OH','Date Acc.','Remarks',''];
 
   // Group by type for display
   let html='';
   EPART_TYPES.forEach(type=>{
-    const rows=d.eparts.filter(p=>p.type===type);
+    const rows=d.eparts.filter(p=>p.type===type||(type==='Alternator Plate'&&p.type==='Alternator'));
     html+=`<div class="sdiv" style="display:flex;align-items:center;gap:8px">${type} <button class="btn sm primary" data-a="add-epart-row" data-eptype="${type}" style="margin-left:auto">+ Add Row</button></div>
     <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
     <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
     <tbody>${rows.map(p=>{
-      const eng=d.engines.find(e=>e.uav===p.uav||e.num===p.engSt);
-      const engHrs=eng?+eng.hrs:0;
-      const typeIntv=p.type==='Propeller'?700:p.type==='Alternator'?300:200;
-      // rem = (engOH_at_assembly + type_interval) - currentEngHrs
-      const nextOHat=(+p.engOH||0)+typeIntv;
-      const rem=nextOHat-engHrs;
+      const typeIntv=p.type==='Propeller'?700:p.type.startsWith('Alternator')?300:200;
+      // Time to OH = interval − itemOH + engOH@assembly
+      const rem=typeIntv-(+p.itemOH||0)+(+p.engOH||0);
       const cl=cHour(rem,typeIntv);
       return`<tr>
         <td class="bld" style="color:var(--text)">${p.type}</td>
         <td class="ed" data-ek="sn" data-id="${p.id}" data-list="eparts" data-type="text">${p.sn||'—'}</td>
-        <td class="ed" data-ek="uav" data-id="${p.id}" data-list="eparts" data-type="select_uav">${p.uav||'—'}</td>
+        <td class="ed" data-ek="engSt" data-id="${p.id}" data-list="eparts" data-type="select_eng_sn">${p.engSt||'—'}</td>
         <td class="ed" data-ek="loc" data-id="${p.id}" data-list="eparts" data-type="select_epart_loc">${p.loc||'—'}</td>
         <td class="ed" data-ek="svc" data-id="${p.id}" data-list="eparts" data-type="select_svc">${svcBadge(p.svc)}</td>
         <td class="ed mono" data-ek="itemOH" data-id="${p.id}" data-list="eparts" data-type="hhmm">${fmtHHMM(+p.itemOH)||'—'}</td>
         <td class="ed mono" data-ek="engOH" data-id="${p.id}" data-list="eparts" data-type="hhmm">${fmtHHMM(+p.engOH)||'—'}</td>
-        <td class="ed" data-ek="toOH" data-id="${p.id}" data-list="eparts" data-type="hhmm">${fmtHHMM(+p.toOH)||'—'}</td>
         <td style="display:table-cell"><span class="dc-inline ${cl}">${fmtHHMM(rem)}</span></td>
         <td class="ed" data-ek="dateAcc" data-id="${p.id}" data-list="eparts" data-type="date">${fmtD(p.dateAcc)}</td>
         <td class="ed" data-ek="remarks" data-id="${p.id}" data-list="eparts" data-type="textarea" class="ell-wide">${p.remarks||'—'}</td>
@@ -1338,7 +1366,7 @@ function pgGSE(){
   function editTd(val,ek,id,lk,type){return`<td class="ed" data-ek="${ek}" data-id="${id}" data-list="${lk}" data-type="${type}">${val}</td>`}
 
   /* FLT table */
-  const fltHtml=`<div class="sdiv">FLT (3 units)</div>
+  const fltHtml=`<div class="sdiv">FLT</div>
   <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
   <thead><tr><th>Item</th><th>S/N</th><th>Location</th><th>Svc</th><th style="white-space:nowrap">Monthly Insp.</th><th style="white-space:nowrap">Annual Insp.</th><th style="white-space:nowrap">Battery 4Y</th><th class="ell-wide">Remarks</th></tr></thead>
   <tbody>${d.flt.map(g=>`<tr>
@@ -1353,7 +1381,7 @@ function pgGSE(){
   </tr>`).join('')}</tbody></table></div></div>`;
 
   /* Generators table */
-  const genHtml=`<div class="sdiv">Generators (6 total)</div>
+  const genHtml=`<div class="sdiv">Generators</div>
   <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
   <thead><tr><th>Item</th><th>S/N</th><th>Location</th><th>Svc</th><th>Total Hours</th><th style="white-space:nowrap">Last Insp Date</th><th class="ell-wide">Remarks</th></tr></thead>
   <tbody>${d.gse_gens.map(g=>`<tr>
@@ -1658,6 +1686,26 @@ function renderModal(){
           <input type="hidden" name="total" id="ftot" value="${r.total||''}">
         </div>
       </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-top:14px">
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--gold);margin-bottom:6px">🔧 Engine Start</div>
+          <div class="timepick" id="tp-est">
+            <div class="timepick-h" onclick="event.stopPropagation();tpOpen('est')" style="cursor:pointer"><div class="timepick-label">Hour</div><div class="timepick-val" id="tp-est-h">${r.est?r.est.slice(0,2):'00'}</div></div>
+            <div class="timepick-sep">:</div>
+            <div class="timepick-m" onclick="event.stopPropagation();tpOpen('est')" style="cursor:pointer"><div class="timepick-label">Min</div><div class="timepick-val" id="tp-est-m">${r.est?r.est.slice(3,5):'00'}</div></div>
+          </div>
+          <input type="hidden" name="est" id="fest" value="${r.est||''}">
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--gold);margin-bottom:6px">🔧 Engine Shutdown</div>
+          <div class="timepick" id="tp-esd">
+            <div class="timepick-h" onclick="event.stopPropagation();tpOpen('esd')" style="cursor:pointer"><div class="timepick-label">Hour</div><div class="timepick-val" id="tp-esd-h">${r.esd?r.esd.slice(0,2):'00'}</div></div>
+            <div class="timepick-sep">:</div>
+            <div class="timepick-m" onclick="event.stopPropagation();tpOpen('esd')" style="cursor:pointer"><div class="timepick-label">Min</div><div class="timepick-val" id="tp-esd-m">${r.esd?r.esd.slice(3,5):'00'}</div></div>
+          </div>
+          <input type="hidden" name="esd" id="fesd" value="${r.esd||''}">
+        </div>
+      </div>
     </div>`+
     g(f('Objective',sel('objective',['Achieved','Not Achieved','Partial','Training','Transit'],r.objective)),
       f('Remarks / Failures',inp('remarks',r.remarks)));
@@ -1792,7 +1840,7 @@ function tpOpen(field){
     // Update hidden input
     var hv=document.getElementById('tp-'+f+'-h');
     var mv=document.getElementById('tp-'+f+'-m');
-    var inp=document.getElementById(f==='to'?'fto':'flnd');
+    var inp=document.getElementById('f'+f);
     if(inp&&hv&&mv)inp.value=hv.textContent+':'+mv.textContent;
     calcFT();
     // Don't close - let user pick both H and M, close on outside click
@@ -1921,7 +1969,7 @@ function bindAll(){
     if(a==='close'){S.modal=null;S.edit=null;tpClose();render();return}
     if((a.startsWith('add-')||a.startsWith('del-')||a==='save')&&!canAdmin()){
       const isOp=USER&&USER.role==='OPERATOR';
-      const opOk=isOp&&(a==='add-flight'||a==='add-fault'||(a==='save'&&(el.dataset.t==='flight'||el.dataset.t==='fault')));
+      const opOk=isOp&&(a==='add-flight'||a==='add-fault'||a==='add-epart-row'||(a==='save'&&(el.dataset.t==='flight'||el.dataset.t==='fault')));
       if(!opOk){toast('🔒 Admin only');return;}
     }
     if(a==='add-epart-row'){
@@ -1943,6 +1991,18 @@ function bindAll(){
           if(t==='tif'){newItem.num=String(d.tifs.length+1);newItem.status='Open';if(!newItem.date)newItem.date=new Date().toISOString().slice(0,10);}
           list.push(newItem);
           logAction(`Added ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,newItem)}`,lk2);
+          if(t==='flight'&&newItem.est&&newItem.esd){
+            const _st=parseHHMM(newItem.est),_sd=parseHHMM(newItem.esd);
+            if(_st!==null&&_sd!==null){
+              const _dur=((_sd-_st)+24)%24;
+              const _en=d.engines.find(e=>e.uav===newItem.uav);
+              if(_dur>0&&_en){
+                _en.hrs=(+_en.hrs||0)+_dur;
+                CHANGED_KEYS.add('engines');
+                logAction(`Engine ${_en.num} +${fmtHHMM(_dur)} engine time (flight ${newItem.date||''})`,'engines');
+              }
+            }
+          }
         }
       }
       sv(d);S.modal=null;S.edit=null;render();toast('Saved!');return;
