@@ -524,7 +524,7 @@ const GCS_NUMS=['750','751','IGCS'];
 const GDT_NUMS=['002','003'];
 const PAY_TYPES=['Spectro','T80'];
 const EPART_TYPES=['Propeller','Carburetor 1/3','Carburetor 2/4','EGT Harness','Alternator Plate'];
-const EPART_LOCS=['U-Tapao','Songkhla','Israel'];
+const EPART_LOCS=['U-Tapao','U-Tapao Storage','Songkhla','Songkhla Storage','Israel'];
 const CATS=['UAV','GCS','GDT','ENGINE','GSE','PAYLOAD','FLIGHT'];
 const TIF_ST=['Open','Closed','Answered','AI','Awaiting Parts'];
 const RMA_ST=['Open','Closed','Invoice sent','Awaiting RMA','Awaiting Invoice','Israel','To ISR','CANCELED'];
@@ -635,7 +635,7 @@ function openPopup(el,uid,lk,ek,type){
     select_payload:PAYLOAD_OPTS,
     select_objective:OBJ_OPTS,
     select_fault_sys:FAULT_SYS,
-    select_eng_sn:S.data.engines.map(e=>e.num).concat(['Storage','Israel'])
+    select_eng_sn:S.data.engines.map(e=>e.num).concat(['N/A'])
   };
 
   if(selectMap[type]){
@@ -908,8 +908,9 @@ function pgHome(){
       const cp=d.eparts.find(p=>(p.type===row.ctype||(row.ctype==='Alternator Plate'&&p.type==='Alternator'))&&p.engSt===e.num);
       if(!cp)return`<td class="dc cn"><span class="cell-d">—</span></td>`;
       const _iv=row.ctype==='Propeller'?700:row.ctype==='Alternator Plate'?300:200;
-      const _rm=_iv-(+cp.itemOH||0)+(+cp.engOH||0);
-      return`<td class="dc ${cHour(_rm,_iv)}"><span class="cell-d">${fmtHHMM(_rm)}</span><span class="cell-s">@${fmtHHMM(_iv)}</span></td>`;
+      const _nx=_iv-(+cp.itemOH||0)+(+cp.engOH||0);
+      const _rm=_nx-(+e.hrs||0);
+      return`<td class="dc ${cHour(_rm,_iv)}"><span class="cell-d">${fmtHHMM(_rm)}</span><span class="cell-s">@${fmtHHMM(_nx)}</span></td>`;
     }
     if(row.type==='engDate'){if(!e)return`<td class="dc cn"><span class="cell-d">—</span></td>`;return dateTd(e[row.key],row.freq,null,e.id,'engines',false);}
     if(row.type==='engOnce'){
@@ -1309,9 +1310,10 @@ function pgEng(){
       const cp=getComp(e,row.ctype);
       if(!cp)return`<td class="dc cn"><span class="cell-d" style="font-size:8px">—</span></td>`;
       const intv=row.ctype==='Propeller'?700:row.ctype==='Alternator Plate'?300:200;
-      const rem=intv-(+cp.itemOH||0)+(+cp.engOH||0);
+      const nextAt=intv-(+cp.itemOH||0)+(+cp.engOH||0);
+      const rem=nextAt-(+e.hrs||0);
       const cl=cHour(rem,intv);
-      return`<td class="dc ${cl}"><span class="cell-d">${fmtHHMM(rem)}</span><span class="cell-s">@${fmtHHMM(intv)}</span></td>`;
+      return`<td class="dc ${cl}"><span class="cell-d">${fmtHHMM(rem)}</span><span class="cell-s">@${fmtHHMM(nextAt)}</span></td>`;
     }
     return`<td class="dc cn">—</td>`;
   }
@@ -1330,7 +1332,7 @@ function pgEng(){
 }
 function pgEParts(){
   const d=S.data;
-  const cols=['Type','S/N','Engine S/N','Location','Svc','Item OH','Eng OH@Asm','Time to OH','Date Acc.','Remarks',''];
+  const cols=['Type','S/N','Engine S/N','UAV','Location','Svc','Item OH','Eng OH@Asm','Engine OH for next replacement','Date Acc.','Remarks',''];
 
   // Group by type for display
   let html='';
@@ -1341,13 +1343,16 @@ function pgEParts(){
     <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
     <tbody>${rows.map(p=>{
       const typeIntv=p.type==='Propeller'?700:p.type.startsWith('Alternator')?300:200;
-      // Time to OH = interval − itemOH + engOH@assembly
+      // Engine OH for next replacement = interval − itemOH + engOH@assembly
       const rem=typeIntv-(+p.itemOH||0)+(+p.engOH||0);
       const cl=cHour(rem,typeIntv);
+      const _e2=d.engines.find(e=>e.num===p.engSt);
+      const uavTail=(_e2&&_e2.uav&&_e2.uav!=='—'&&_e2.uav!=='STORAGE')?_e2.uav:'';
       return`<tr>
         <td class="bld" style="color:var(--text)">${p.type}</td>
         <td class="ed" data-ek="sn" data-id="${p.id}" data-list="eparts" data-type="text">${p.sn||'—'}</td>
         <td class="ed" data-ek="engSt" data-id="${p.id}" data-list="eparts" data-type="select_eng_sn">${p.engSt||'—'}</td>
+        <td style="color:var(--text2)">${uavTail||''}</td>
         <td class="ed" data-ek="loc" data-id="${p.id}" data-list="eparts" data-type="select_epart_loc">${p.loc||'—'}</td>
         <td class="ed" data-ek="svc" data-id="${p.id}" data-list="eparts" data-type="select_svc">${svcBadge(p.svc)}</td>
         <td class="ed mono" data-ek="itemOH" data-id="${p.id}" data-list="eparts" data-type="hhmm">${fmtHHMM(+p.itemOH)||'—'}</td>
