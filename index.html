@@ -273,6 +273,11 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
 }
 </style></head><body>
 <div class="app" id="app"></div><script>
+/* ═══════════════════════════════════════════════════════
+   © 2026 Tomer Sudman — OSPREY Maintenance Manager
+   All rights reserved. Unauthorized copying, modification
+   or distribution of this software is prohibited.
+   ═══════════════════════════════════════════════════════ */
 /* ═══ CONSTANTS ═══ */
 const TODAY=new Date();TODAY.setHours(0,0,0,0);
 const MS=864e5;
@@ -411,6 +416,7 @@ function showLogin(){
     <div class="login-err" id="lerr"></div>
     <input type="password" id="lpwd" placeholder="Enter code" autocomplete="off" inputmode="numeric">
     <button id="lbtn">Login</button>
+    <div style="margin-top:18px;font-size:8.5px;color:var(--text3);letter-spacing:.04em">© 2026 Tomer Sudman. All rights reserved.</div>
   </div>`;
   document.body.appendChild(ov);
   let selRole='ADMIN';
@@ -1556,12 +1562,14 @@ function pgFlt(){
   const fl=d.flights;
   const fa=d.faults;
   const totalFH=fl.reduce((s,f)=>s+(+f.total||0),0);
-  const filtered=flightFilter?fl.filter(f=>
+  const flSorted=[...fl].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.id-a.id);
+  const faSorted=[...fa].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.id-a.id);
+  const filtered=flightFilter?flSorted.filter(f=>
     (f.uav&&f.uav.toLowerCase().includes(flightFilter))||
     (f.base&&f.base.toLowerCase().includes(flightFilter))||
     (f.payload&&f.payload.toLowerCase().includes(flightFilter))||
     (f.objective&&f.objective.toLowerCase().includes(flightFilter))
-  ):fl;
+  ):flSorted;
 
   /* Stats for charts */
   const now=new Date();
@@ -1580,13 +1588,14 @@ function pgFlt(){
     <td class="ed dim" data-ek="payload" data-id="${f.id}" data-list="flights" data-type="select_payload">${f.payload||'—'}</td>
     <td class="ed mono" data-ek="to" data-id="${f.id}" data-list="flights" data-type="text">${f.to||'—'}</td>
     <td class="ed mono" data-ek="lnd" data-id="${f.id}" data-list="flights" data-type="text">${f.lnd||'—'}</td>
-    <td>${badge(fmtHHMM(+f.total||0),'bgold')}</td>
+    <td>${+f.total>0?badge(fmtHHMM(+f.total),'bgold'):`<span class="mono" style="color:var(--text2)">—</span>`}</td>
+    <td class="mono" style="color:var(--text2)">${f.engTot?fmtHHMM(+f.engTot):'—'}</td>
     <td class="ed" data-ek="objective" data-id="${f.id}" data-list="flights" data-type="select_objective">${f.objective||'—'}</td>
     <td class="ed ell-wide" data-ek="remarks" data-id="${f.id}" data-list="flights" data-type="textarea">${f.remarks||'—'}</td>
     <td><button class="btn sm danger" data-a="del-flight" data-id="${f.id}">✕</button></td>
   </tr>`).join('');
 
-  const faultRows=fa.map(f=>`<tr>
+  const faultRows=faSorted.map(f=>`<tr>
     <td class="dim">${fmtD(f.date)}</td>
     <td class="ed" data-ek="uav" data-id="${f.id}" data-list="faults" data-type="select_uav">${f.uav||'—'}</td>
     <td class="ed" data-ek="system" data-id="${f.id}" data-list="faults" data-type="select_fault_sys">${f.system||'—'}</td>
@@ -1636,12 +1645,12 @@ function pgFlt(){
     <button class="btn sm" onclick="flightFilter='';render()">Clear</button>
     <span style="font-size:10px;color:var(--text3)">${filtered.length}/${fl.length} shown</span>
   </div>
-  <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
-  <thead><tr><th>Date</th><th>UAV</th><th>Base</th><th>Payload</th><th>T/O</th><th>LND</th><th>Total</th><th>Objective</th><th>Remarks/Failures</th><th></th></tr></thead>
-  <tbody id="flt-tbody">${flightRows||'<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--text3)">No flights logged</td></tr>'}</tbody>
+  <div class="tbl-wrap"><div class="tbl-scroll" style="max-height:560px;overflow-y:auto"><table class="dt-c">
+  <thead><tr><th>Date</th><th>UAV</th><th>Base</th><th>Payload</th><th>T/O</th><th>LND</th><th>Total</th><th>Eng Time</th><th>Objective</th><th>Remarks/Failures</th><th></th></tr></thead>
+  <tbody id="flt-tbody">${flightRows||'<tr><td colspan="11" style="text-align:center;padding:18px;color:var(--text3)">No flights logged</td></tr>'}</tbody>
   </table></div></div>
   <div class="sdiv">Fault Log</div>
-  <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
+  <div class="tbl-wrap"><div class="tbl-scroll" style="max-height:560px;overflow-y:auto"><table class="dt-c">
   <thead><tr><th>Date</th><th>UAV</th><th>System</th><th>Subsystem</th><th>S/N</th><th>TIF #</th><th>Sent</th><th>Remarks</th><th></th></tr></thead>
   <tbody>${faultRows||'<tr><td colspan="9" style="text-align:center;padding:18px;color:var(--text3)">No faults</td></tr>'}</tbody>
   </table></div></div></div></div>`;
@@ -1691,7 +1700,7 @@ function renderModal(){
           <input type="hidden" name="total" id="ftot" value="${r.total||''}">
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin-top:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:start;margin-top:14px">
         <div>
           <div style="font-size:10px;font-weight:600;color:var(--gold);margin-bottom:6px">🔧 Engine Start</div>
           <div class="timepick" id="tp-est">
@@ -1709,6 +1718,11 @@ function renderModal(){
             <div class="timepick-m" onclick="event.stopPropagation();tpOpen('esd')" style="cursor:pointer"><div class="timepick-label">Min</div><div class="timepick-val" id="tp-esd-m">${r.esd?r.esd.slice(3,5):'00'}</div></div>
           </div>
           <input type="hidden" name="esd" id="fesd" value="${r.esd||''}">
+        </div>
+        <div>
+          <div style="font-size:10px;font-weight:600;color:var(--gold);margin-bottom:6px">⏱ Engine Total</div>
+          <div id="fengtotd" style="background:var(--bg3);border:1.5px solid var(--border2);border-radius:8px;padding:10px;font-size:26px;font-weight:700;color:var(--gold);font-family:monospace;text-align:center;min-height:58px;display:flex;align-items:center;justify-content:center">${r.engTot?fmtHHMM(+r.engTot):'—'}</div>
+          <input type="hidden" name="engTot" id="fengtot" value="${r.engTot||''}">
         </div>
       </div>
     </div>`+
@@ -1847,7 +1861,7 @@ function tpOpen(field){
     var mv=document.getElementById('tp-'+f+'-m');
     var inp=document.getElementById('f'+f);
     if(inp&&hv&&mv)inp.value=hv.textContent+':'+mv.textContent;
-    calcFT();
+    calcFT();calcET();
     // Don't close - let user pick both H and M, close on outside click
   });
 
@@ -1864,6 +1878,22 @@ function tpOpen(field){
 function tpOpenPart(field, part){ tpOpen(field); }
 
 
+function calcET(){
+  var a=document.getElementById('fest'),b=document.getElementById('fesd');
+  var dsp=document.getElementById('fengtotd'),hid=document.getElementById('fengtot');
+  if(!a||!b||!dsp)return;
+  var av=a.value,bv=b.value;
+  if(av&&bv&&av.includes(':')&&bv.includes(':')){
+    var s=parseHHMM(av),e=parseHHMM(bv);
+    if(s!==null&&e!==null){
+      var dur=((e-s)+24)%24;
+      dsp.textContent=fmtHHMM(dur);
+      if(hid)hid.value=dur;
+      return;
+    }
+  }
+  dsp.textContent='—';if(hid)hid.value='';
+}
 function calcFT(){
   var toInp=document.getElementById('fto');
   var lndInp=document.getElementById('flnd');
@@ -1902,7 +1932,9 @@ function render(){
         ${USER?'<button class="nbtn" id="blo" title="Logout">⎋</button>':''}
       </div>
     </div>
-    <div class="content">${page()}</div>
+    <div class="content">${page()}
+      <div style="text-align:center;padding:26px 10px 14px;font-size:9.5px;color:var(--text3);letter-spacing:.04em">© 2026 Tomer Sudman — OSPREY Maintenance Manager. All rights reserved.</div>
+    </div>
     ${S.modal?renderModal():''}
   `;
   bindAll();
@@ -1951,9 +1983,10 @@ function bindAll(){
   if(fltSearch){fltSearch.addEventListener('input',()=>{
     flightFilter=fltSearch.value.toLowerCase();
     const d=S.data,fl=d.flights;
-    const filtered=flightFilter?fl.filter(f=>(f.uav&&f.uav.toLowerCase().includes(flightFilter))||(f.base&&f.base.toLowerCase().includes(flightFilter))||(f.payload&&f.payload.toLowerCase().includes(flightFilter))||(f.objective&&f.objective.toLowerCase().includes(flightFilter))):fl;
+    const flSorted=[...fl].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.id-a.id);
+    const filtered=flightFilter?flSorted.filter(f=>(f.uav&&f.uav.toLowerCase().includes(flightFilter))||(f.base&&f.base.toLowerCase().includes(flightFilter))||(f.payload&&f.payload.toLowerCase().includes(flightFilter))||(f.objective&&f.objective.toLowerCase().includes(flightFilter))):flSorted;
     const tbody=document.getElementById('flt-tbody');
-    if(tbody)tbody.innerHTML=filtered.map(f=>`<tr><td class="dim">${fmtD(f.date)}</td><td class="ed bld" data-ek="uav" data-id="${f.id}" data-list="flights" data-type="select_uav">${f.uav||'—'}</td><td class="ed dim" data-ek="base" data-id="${f.id}" data-list="flights" data-type="select_base">${f.base||'—'}</td><td class="ed dim" data-ek="payload" data-id="${f.id}" data-list="flights" data-type="select_payload">${f.payload||'—'}</td><td class="ed mono" data-ek="to" data-id="${f.id}" data-list="flights" data-type="text">${f.to||'—'}</td><td class="ed mono" data-ek="lnd" data-id="${f.id}" data-list="flights" data-type="text">${f.lnd||'—'}</td><td>${badge(fmtHHMM(+f.total||0),'bgold')}</td><td class="ed" data-ek="objective" data-id="${f.id}" data-list="flights" data-type="select_objective">${f.objective||'—'}</td><td class="ed ell" data-ek="remarks" data-id="${f.id}" data-list="flights" data-type="textarea" class="ell-wide">${f.remarks||'—'}</td><td><button class="btn sm danger" data-a="del-flight" data-id="${f.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="10" style="text-align:center;padding:18px;color:var(--text3)">No matching flights</td></tr>';
+    if(tbody)tbody.innerHTML=filtered.map(f=>`<tr><td class="dim">${fmtD(f.date)}</td><td class="ed bld" data-ek="uav" data-id="${f.id}" data-list="flights" data-type="select_uav">${f.uav||'—'}</td><td class="ed dim" data-ek="base" data-id="${f.id}" data-list="flights" data-type="select_base">${f.base||'—'}</td><td class="ed dim" data-ek="payload" data-id="${f.id}" data-list="flights" data-type="select_payload">${f.payload||'—'}</td><td class="ed mono" data-ek="to" data-id="${f.id}" data-list="flights" data-type="text">${f.to||'—'}</td><td class="ed mono" data-ek="lnd" data-id="${f.id}" data-list="flights" data-type="text">${f.lnd||'—'}</td><td>${+f.total>0?badge(fmtHHMM(+f.total),'bgold'):`<span class="mono" style="color:var(--text2)">—</span>`}</td><td class="mono" style="color:var(--text2)">${f.engTot?fmtHHMM(+f.engTot):'—'}</td><td class="ed" data-ek="objective" data-id="${f.id}" data-list="flights" data-type="select_objective">${f.objective||'—'}</td><td class="ed ell" data-ek="remarks" data-id="${f.id}" data-list="flights" data-type="textarea" class="ell-wide">${f.remarks||'—'}</td><td><button class="btn sm danger" data-a="del-flight" data-id="${f.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="11" style="text-align:center;padding:18px;color:var(--text3)">No matching flights</td></tr>';
     bindEditable();
   })}
 
@@ -1999,7 +2032,8 @@ function bindAll(){
           if(t==='flight'&&newItem.est&&newItem.esd){
             const _st=parseHHMM(newItem.est),_sd=parseHHMM(newItem.esd);
             if(_st!==null&&_sd!==null){
-              const _dur=((_sd-_st)+24)%24;
+              const _dur=+newItem.engTot||((_sd-_st)+24)%24;
+              newItem.engTot=_dur;
               const _en=d.engines.find(e=>e.uav===newItem.uav);
               if(_dur>0&&_en){
                 _en.hrs=(+_en.hrs||0)+_dur;
