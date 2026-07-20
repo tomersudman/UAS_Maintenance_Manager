@@ -259,6 +259,8 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
   .pvt-lg tr>*:first-child,.pvt tr>*:first-child,.dt-c tr>*:first-child,.ov-block table tr>*:first-child{position:sticky;left:0;z-index:2}
   .pvt-lg thead th:first-child,.pvt thead th:first-child,.dt-c thead th:first-child,.ov-block table thead th:first-child{z-index:4}
   .pvt-lg tr>td:first-child,.pvt tr>td:first-child{background:var(--bg4)}
+  .pvt-lg tr.sep>td,.pvt tr.sep>td,.ov-block table tr>td[colspan]{position:static!important}
+  .seplbl{position:sticky;left:10px;display:inline-block}
   .dt-c tr>td:first-child{background:var(--bg3)}
   .ov-block table tr>td:first-child{background:var(--bg4)}
   .tbl-scroll{max-height:75vh;overflow:auto}
@@ -900,7 +902,7 @@ function pgHome(){
     ${d.uavs.map(u=>`<th class="ch"><span class="t">${u.tail}</span><span class="s">${u.site}</span></th>`).join('')}
   </tr></thead><tbody>`;
   uRows.forEach(r=>{
-    if(r.sep){uTbl+=`<tr class="sep"><td colspan="${1+d.uavs.length}">${r.sep}</td></tr>`;return;}
+    if(r.sep){uTbl+=`<tr class="sep"><td colspan="${1+d.uavs.length}"><span class="seplbl">${r.sep}</span></td></tr>`;return;}
     const isEng=r.type==='engOH'||r.type==='engDate';
     uTbl+=`<tr${isEng?' class="eng-row"':''}><td class="rl">${r.lbl}</td>${d.uavs.map(u=>uCell(u,r)).join('')}</tr>`;
   });
@@ -932,7 +934,7 @@ function pgHome(){
   const thL='background:var(--bg4);color:var(--text2);font-size:9px;font-weight:600;padding:5px 8px;border:1px solid var(--border);text-transform:uppercase;letter-spacing:.05em;text-align:left';
   const rl='background:var(--bg4);color:var(--text2);font-size:10px;font-weight:500;padding:4px 8px;border:1px solid var(--border);white-space:nowrap';
   const dimTd=(v)=>`<td style="font-size:10px;color:var(--text3);padding:4px 8px;border:1px solid var(--border);text-align:center;white-space:nowrap">${v||'—'}</td>`;
-  const sepTd=(n,lbl)=>`<tr><td colspan="${n}" style="background:#1b212b;color:#8ea0b8;font-size:9px;font-weight:700;padding:3px 8px;border:1px solid rgba(255,255,255,.06);letter-spacing:.06em;text-transform:uppercase">${lbl}</td></tr>`;
+  const sepTd=(n,lbl)=>`<tr><td colspan="${n}" style="background:#1b212b;color:#8ea0b8;font-size:9px;font-weight:700;padding:3px 8px;border:1px solid rgba(255,255,255,.06);letter-spacing:.06em;text-transform:uppercase"><span class="seplbl">${lbl}</span></td></tr>`;
 
   let gcsTbl=`<div class="ov-block"><div class="ov-block-hdr">📡 GCS / GDT / Satcom</div>
   <table style="${gcsTblCss}"><thead><tr>
@@ -1205,7 +1207,7 @@ function pgUAV(){
   <table class="pvt-lg"><thead><tr><th class="lh" style="min-width:110px">S/N</th>
   ${uavs.map(u=>`<th class="ch"><span class="t">${u.tail}</span><span class="s">${u.site}</span></th>`).join('')}
   </tr></thead><tbody>`;
-  rows.forEach(r=>{if(r.sep){tbl+=`<tr class="sep"><td colspan="${1+uavs.length}">${r.sep}</td></tr>`;return;}
+  rows.forEach(r=>{if(r.sep){tbl+=`<tr class="sep"><td colspan="${1+uavs.length}"><span class="seplbl">${r.sep}</span></td></tr>`;return;}
     tbl+=`<tr><td class="rl">${r.lbl}</td>${uavs.map(u=>cell(u,r)).join('')}</tr>`;
   });
   tbl+=`</tbody></table></div>`;
@@ -1220,7 +1222,7 @@ function pgGCS(){
     ${list.map(u=>`<th class="ch"><span class="t">${colHdr(u)}</span>${lk==='satcoms'?'':`<span class="s">${u.site||''}</span>`}</th>`).join('')}
     </tr></thead><tbody>`;
     rows.forEach(row=>{
-      if(row.sep){t+=`<tr class="sep"><td colspan="${1+list.length}">${row.sep}</td></tr>`;return;}
+      if(row.sep){t+=`<tr class="sep"><td colspan="${1+list.length}"><span class="seplbl">${row.sep}</span></td></tr>`;return;}
       if(row.type==='svc'){
         t+=`<tr><td class="rl">Svc</td>${list.map(u=>`<td class="dc ${svcCl(u.svc)} ed" data-ek="svc" data-id="${u.id}" data-list="${lk}" data-type="select_svc"><span class="cell-d">${u.svc}</span></td>`).join('')}</tr>`;
         t+=`<tr><td class="rl" style="font-size:8px">Remarks</td>${list.map(u=>`<td class="dc cn ed" data-ek="remarks" data-id="${u.id}" data-list="${lk}" data-type="textarea"><span class="cell-d" style="font-size:8px">${u.remarks?(u.remarks.slice(0,12)+'…'):'—'}</span></td>`).join('')}</tr>`;
@@ -1287,7 +1289,7 @@ function pgEng(){
   ${d.engines.map(e=>`<th class="ch ed" data-ek="num" data-id="${e.id}" data-list="engines" data-type="text" style="cursor:pointer"><span class="t">${e.num}</span><span class="s">${e.uav||'STORAGE'}</span></th>`).join('')}
   </tr></thead><tbody>`;
   checks.forEach(row=>{
-    if(row.sep){tbl+=`<tr class="sep"><td colspan="${1+d.engines.length}">${row.sep}</td></tr>`;return;}
+    if(row.sep){tbl+=`<tr class="sep"><td colspan="${1+d.engines.length}"><span class="seplbl">${row.sep}</span></td></tr>`;return;}
     tbl+=`<tr><td class="rl">${row.lbl}</td>${d.engines.map(e=>eCell(e,row)).join('')}</tr>`;
   });
   tbl+=`</tbody></table></div>`;
