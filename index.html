@@ -347,7 +347,12 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
 .fs-due{margin-left:auto;text-align:right}
 .fs-due .d1{font-size:11px;font-weight:600}
 .fs-due .d2{font-size:8.5px;opacity:.65}
-</style></head><body>
+
+.lbl-short{display:none}
+@media(max-width:820px){.lbl-full{display:none}.lbl-short{display:inline}}
+
+@media(max-width:820px){.chart-grid{grid-template-columns:1fr!important}}
+.rep-d{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);padding:7px 10px;font-size:12px;font-family:inherit;color-scheme:dark}</style></head><body>
 <div class="app" id="app"></div><script>
 /* ═══════════════════════════════════════════════════════
    © 2026 Tomer Sudman — OSPREY Maintenance Manager
@@ -623,27 +628,29 @@ const TABS=[
   {id:'pay',l:'Payloads',ic:'🎯'},
   {id:'tif',l:'TIF',ic:'📋'},{id:'sb',l:'SB',ic:'📑'},
   {id:'rma',l:'RMA',ic:'↻'},{id:'rrq',l:'RRQ',ic:'📦'},
-  {id:'flt',l:'Flights & Faults',ic:'🛫'}
+  {id:'flt',l:'Flights & Faults',ic:'🛫'},
+  {id:'settings',l:'Settings',ic:'⚙'}
 ];
 const TAB_GROUPS=[
-  {h:'Operations',ids:['home','uav','gcs','eng','eparts','flt']},
-  {h:'Assets',ids:['gse','pay']},
-  {h:'Compliance',ids:['tif','sb','rma','rrq']}
+  {h:'Operations',ids:['home','uav','gcs','eng','eparts','gse','pay','flt']},
+  {h:'Compliance',ids:['tif','sb','rma','rrq']},
+  {h:'System',ids:['settings']}
 ];
 const _sv=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
-  gcs:_sv('<circle cx="12" cy="12" r="1"/><path d="M8.5 8.5a5 5 0 0 0 0 7M15.5 8.5a5 5 0 0 1 0 7M5.6 5.6a9 9 0 0 0 0 12.8M18.4 5.6a9 9 0 0 1 0 12.8"/>'),
-  eng:_sv('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>'),
+  gcs:_sv('<rect x="4" y="13" width="16" height="8" rx="1"/><path d="M12 13V8M12 8l-3 3M12 8l3 3M9 5a4 4 0 0 1 6 0M7 3a7 7 0 0 1 10 0"/>'),
+  eng:_sv('<circle cx="12" cy="12" r="2.5"/><path d="M12 2a10 10 0 0 1 8.5 4.7l-6.8 4M22 14a10 10 0 0 1-8 8l-1-8M2 12a10 10 0 0 1 4-9l5 6.5"/>'),
   eparts:_sv('<path d="M7 10h3V7L6.5 3.5a6 6 0 0 1 8 8l6 6a2 2 0 0 1-3 3l-6-6a6 6 0 0 1-8-8L7 10"/>'),
-  flt:_sv('<path d="M14.5 9.5 21 3M3 21l6.5-6.5M8 3l2 2-4 4-3-1zM16 21l-2-2 4-4 3 1z"/>'),
+  flt:_sv('<path d="M17.8 19.2 16 11l3.5-3.5a2.1 2.1 0 0 0-3-3L13 8 4.8 6.2a.5.5 0 0 0-.5.8L9 11l-2 2H4l-1 1 3 2 2 3 1-1v-3l2-2 4.2 4.7a.5.5 0 0 0 .8-.5z"/>'),
   gse:_sv('<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>'),
   pay:_sv('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'),
   tif:_sv('<path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/><path d="M9 13h6M9 17h6"/>'),
   sb:_sv('<path d="M18 7v14l-6-4-6 4V7a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4z"/>'),
   rma:_sv('<path d="M20 11A8.1 8.1 0 0 0 4.5 9M4 5v4h4M4 13a8.1 8.1 0 0 0 15.5 2m.5 4v-4h-4"/>'),
-  rrq:_sv('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>')
+  rrq:_sv('<path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12l8-4.5M12 12v9M12 12L4 7.5"/>'),
+  settings:_sv('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 1 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.1A1.6 1.6 0 0 0 4.6 7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3H9.3A1.6 1.6 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8V9.3a1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.6 1.6 0 0 0-1.5 1z"/>')
 };
 
 const INT={weekly:7,monthly:30,'3m':91,'6m':182,'1y':365,'2y':730,'3y':1095,'4y':1460,'5y':1825,'8y':2920,'10y':3650};
@@ -967,8 +974,8 @@ function pgHome(){
     {lbl:'Corrosion 5Y',freq:'5y',type:'date',key:'cor5y'},
     {sep:'REPLACEMENTS'},
     {lbl:'Fuel Filters',freq:'200H',type:'huav',key:'ff200',intv:200},
-    {lbl:'Pitot/Fuel & Air 3Y',freq:'3y',type:'date',key:'pitot3y'},
-    {lbl:'Fuel Press. Reg. 8Y',freq:'8y',type:'date',key:'fpr8y'},
+    {lbl:'Pitot/Fuel & Air 3Y',short:'3 Years',freq:'3y',type:'date',key:'pitot3y'},
+    {lbl:'Fuel Press. Reg. 8Y',short:'8 Years',freq:'8y',type:'date',key:'fpr8y'},
     {lbl:'V-Tail 10Y',freq:'10y',type:'date',key:'vt8y'},
     {lbl:'V-Tail 6000H',freq:'6000H',type:'huav',key:'vt4k',intv:6000},
     {lbl:'R-MLG 10Y',freq:'10y',type:'date',key:'mlgr'},
@@ -1288,7 +1295,7 @@ function pgHome(){
     <div class="ov-zone">${gcsTbl}${genOvTbl}${opatsTbl}</div>
     <div class="ov-zone">${payTbl}${fltOvTbl}${tifOvTbl}${rmaOvTbl}${sbOvTbl}</div>
   </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:10px">
+  <div class="chart-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;margin-bottom:10px">
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px">
       <div style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Flight Hours by Month (last 12 months)</div>
       <div style="position:relative;height:160px"><canvas id="ovFhChart"></canvas></div>
@@ -1341,7 +1348,7 @@ function pgUAV(){
   ${uavs.map(u=>`<th class="ch"><span class="t">${u.tail}</span><span class="s">${u.site}</span></th>`).join('')}
   </tr></thead><tbody>`;
   rows.forEach(r=>{if(r.sep){tbl+=`<tr class="sep"><td colspan="${1+uavs.length}"><span class="seplbl">${r.sep}</span></td></tr>`;return;}
-    tbl+=`<tr><td class="rl">${r.lbl}</td>${uavs.map(u=>cell(u,r)).join('')}</tr>`;
+    tbl+=`<tr><td class="rl">${r.short?`<span class="lbl-full">${r.lbl}</span><span class="lbl-short">${r.short}</span>`:r.lbl}</td>${uavs.map(u=>cell(u,r)).join('')}</tr>`;
   });
   tbl+=`</tbody></table></div>`;
   return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">900 UAV</div><div class="ph-sub">Click any cell to edit • HH:MM format for hours • dates = last done → auto-calculates due</div></div></div>
@@ -2068,12 +2075,163 @@ function render(){
   bindAll();
 }
 
+function pgSettings(){
+  if(!canAdmin())return`<div class="ph"><div><div class="ph-title">Settings</div><div class="ph-sub">Admin only</div></div></div><div class="ov-block" style="padding:20px;text-align:center;color:var(--text3)">🔒 Settings are available to administrators only.</div>`;
+  const card=(icon,title,desc,btns)=>`<div class="ov-block" style="padding:18px 20px;margin-bottom:14px;max-width:560px">
+    <div style="display:flex;align-items:flex-start;gap:14px">
+      <div style="width:40px;height:40px;border-radius:10px;background:var(--gold2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--gold);font-size:18px">${icon}</div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;color:var(--text)">${title}</div>
+        <div style="font-size:11.5px;color:var(--text3);margin-top:2px;line-height:1.5">${desc}</div>
+        <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">${btns}</div>
+      </div>
+    </div></div>`;
+  return`
+  <div class="ph"><div><div class="ph-title">Settings</div><div class="ph-sub">Data management, reports and app options</div></div></div>
+  ${card('📄','Weekly Status Report','Generate a professional Word report for your company. Choose the reporting period — TIFs and SBs will be filtered to items dated within it. All system statuses, open RMAs and open RRQs are always included in full.',
+    `<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;width:100%">
+       <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Period from</div><input type="date" id="rep-from" class="rep-d" value="${repDefaultFrom()}"></div>
+       <div><div style="font-size:10px;color:var(--text3);margin-bottom:3px">Period to</div><input type="date" id="rep-to" class="rep-d" value="${repDefaultTo()}"></div>
+       <button class="btn primary" id="st-report" style="margin-left:auto">⬇ Download Word Report</button>
+     </div>`)}
+  ${card('💾','Backup &amp; Restore','Save a complete backup of all data to a file on your device, or restore from a previous backup. Restoring overwrites all current data and syncs it to the cloud.',
+    '<button class="btn primary" id="st-backup">💾 Download Backup</button><button class="btn" id="st-restore">📂 Restore from File</button><input type="file" id="st-ri" accept=".json" style="display:none">')}
+  ${card('📊','Excel Export','Export all maintenance tables to an Excel-compatible spreadsheet.',
+    '<button class="btn" id="st-excel">⬇ Export to Excel</button>')}
+  <div style="font-size:10px;color:var(--text3);max-width:560px;margin-top:6px;line-height:1.6">Passwords and role management are configured in the Google Apps Script backend. © 2026 Tomer Sudman — OSPREY Maintenance Manager.</div>
+  `;
+}
+
+function _mondayOf(d){const x=new Date(d);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);return x;}
+function repDefaultFrom(){return _mondayOf(new Date()).toISOString().slice(0,10);}
+function repDefaultTo(){const m=_mondayOf(new Date());m.setDate(m.getDate()+6);return m.toISOString().slice(0,10);}
+function downloadWordReport(){
+  const d=S.data;
+  const fromV=(document.getElementById('rep-from')||{}).value||repDefaultFrom();
+  const toV=(document.getElementById('rep-to')||{}).value||repDefaultTo();
+  const fromD=new Date(fromV+'T00:00:00'), toD=new Date(toV+'T23:59:59');
+  const fmtLong=s=>new Date(s+'T00:00:00').toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric'});
+  const gen=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const svcTxt=v=>v==='YES'?'Serviceable':v==='NO'?'Unserviceable':v==='PARTIALLY'?'Partially Svc':v||'—';
+  const svcColor=v=>v==='YES'?'#2e7d32':v==='NO'?'#c62828':v==='PARTIALLY'?'#e08d00':'#666';
+  const inRange=dstr=>{if(!dstr)return false;const x=new Date(dstr+'T12:00:00');return x>=fromD&&x<=toD;};
+  const statusChip=(txt,color)=>`<span style="color:${color};font-weight:bold">${esc(txt)}</span>`;
+  // nearest upcoming date-based maintenance for an item across given [key,freq] checks
+  const nextDue=(obj,checks)=>{
+    let best=null;
+    checks.forEach(c=>{const v=obj[c.key];if(!v)return;const due=addInt(v,c.freq);if(!due)return;const days=du(due);if(best===null||days<best.days)best={lbl:c.lbl,due,days};});
+    if(!best)return'—';
+    const dtxt=fmtD(best.due);
+    return best.days<0?`${esc(best.lbl)} — OVERDUE (${dtxt})`:`${esc(best.lbl)} — ${dtxt} (${best.days}d)`;
+  };
+  const UAV_CHK=[{key:'monthly',freq:'monthly',lbl:'Monthly'},{key:'q3',freq:'3m',lbl:'3-Month'},{key:'q6',freq:'6m',lbl:'6-Month'},{key:'cor5y',freq:'5y',lbl:'Corrosion 5Y'},{key:'pitot3y',freq:'3y',lbl:'Pitot 3Y'},{key:'fpr8y',freq:'8y',lbl:'Fuel Press 8Y'},{key:'vt8y',freq:'10y',lbl:'V-Tail 10Y'}];
+  const ENG_CHK=[{key:'coolant2y',freq:'2y',lbl:'Coolant 2Y'},{key:'prop4y',freq:'4y',lbl:'Propeller 4Y'},{key:'rub5y',freq:'5y',lbl:'Rubber 5Y'},{key:'pres',freq:'1y',lbl:'Preservation 1Y'}];
+  const GCS_CHK=[{key:'monthly',freq:'monthly',lbl:'Monthly'},{key:'qtr',freq:'3m',lbl:'Quarterly'},{key:'annual',freq:'1y',lbl:'Annual'},{key:'bat3y',freq:'3y',lbl:'UPS Batt 3Y'},{key:'cbat5y',freq:'5y',lbl:'Comp Batt 5Y'}];
+  const GDT_CHK=[{key:'monthly',freq:'monthly',lbl:'Monthly'},{key:'qtr',freq:'3m',lbl:'Quarterly'},{key:'annual',freq:'1y',lbl:'Annual'},{key:'bat2y',freq:'2y',lbl:'Battery 2Y'}];
+  const SAT_CHK=[{key:'sixMonthly',freq:'6m',lbl:'6-Month'}];
+
+  // ── UAV ──
+  const uavRows=d.uavs.map(u=>{
+    const e=d.engines.find(x=>x.uav===u.tail);
+    return`<tr><td><b>${esc(u.tail)}</b></td><td>${esc(u.site||u.loc||'—')}</td><td>${statusChip(svcTxt(u.svc),svcColor(u.svc))}</td><td>${esc(fmtHHMM(+u.fh)||'00:00')}</td><td>${e?esc(e.num):'—'}</td><td class="nd">${nextDue(u,UAV_CHK)}</td><td class="rmk">${esc(u.remarks||'')}</td></tr>`;
+  }).join('');
+
+  // ── Engines ──
+  const engRows=d.engines.map(e=>`<tr><td><b>${esc(e.num)}</b></td><td>${esc(e.uav||'Storage')}</td><td>${esc(e.loc||'—')}</td><td>${statusChip(svcTxt(e.svc),svcColor(e.svc))}</td><td>${esc(fmtHHMM(+e.hrs)||'00:00')}</td><td class="nd">${nextDue(e,ENG_CHK)}</td><td class="rmk">${esc(e.remarks||'')}</td></tr>`).join('');
+
+  // ── GCS / GDT / Satcom ──
+  const gcsRows=d.gcs.map(g=>`<tr><td>GCS</td><td><b>${esc(g.unit)}</b></td><td>${esc(g.site||'—')}</td><td>${statusChip(svcTxt(g.svc),svcColor(g.svc))}</td><td class="nd">${nextDue(g,GCS_CHK)}</td><td class="rmk">${esc(g.remarks||'')}</td></tr>`).join('');
+  const gdtRows=d.gdt.map(g=>`<tr><td>GDT</td><td><b>${esc(g.unit)}</b></td><td>${esc(g.site||'—')}</td><td>${statusChip(svcTxt(g.svc),svcColor(g.svc))}</td><td class="nd">${nextDue(g,GDT_CHK)}</td><td class="rmk">${esc(g.remarks||'')}</td></tr>`).join('');
+  const satRows=d.satcoms.map(s=>`<tr><td>Satcom</td><td><b>${esc(s.name)}</b></td><td>${esc(s.site||'—')}</td><td>${statusChip(svcTxt(s.svc),svcColor(s.svc))}</td><td class="nd">${nextDue(s,SAT_CHK)}</td><td class="rmk">${esc(s.remarks||'')}</td></tr>`).join('');
+  const groundRows=gcsRows+gdtRows+satRows;
+
+  // ── TIFs in range ──
+  const tifIn=d.tifs.filter(t=>inRange(t.date));
+  const tifRows=tifIn.length?tifIn.map(t=>`<tr><td>${esc(fmtD(t.date))}</td><td>${esc(t.cat||'—')}</td><td>${esc(t.desc||'')}</td><td>${esc(t.status||'Open')}</td><td>${esc(t.remarks||'')}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#888">No TIFs in this period</td></tr>';
+
+  // ── SBs in range ──
+  const sbIn=d.sbs.filter(s=>inRange(s.date));
+  const sbRows=sbIn.length?sbIn.map(s=>`<tr><td>${esc(s.num||'—')}</td><td>${esc(fmtD(s.date))}</td><td>${esc(s.sys||'—')}</td><td>${esc(s.desc||'')}</td><td>${esc(s.status||'Open')}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#888">No SBs in this period</td></tr>';
+
+  // ── Open RMAs (all) ──
+  const rmaOpen=d.rmas.filter(r=>!r.arrived);
+  const rmaRows=rmaOpen.length?rmaOpen.map(r=>`<tr><td>${esc(fmtD(r.date))}</td><td>${esc(r.form||'—')}</td><td>${esc(r.tail||'—')}</td><td>${esc(r.item||'')}</td><td>${esc(r.pn||'')}</td><td>${esc(r.status||'Open')}</td><td>${r.shipped?'Yes':'No'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:#888">No open RMAs</td></tr>';
+
+  // ── Open RRQs (all) ──
+  const rrqOpen=d.rrqs.filter(r=>r.status!=='Received'&&r.status!=='Closed'&&!r.arrived);
+  const rrqRows=rrqOpen.length?rrqOpen.map(r=>`<tr><td>${esc(fmtD(r.date))}</td><td>${esc(r.form||'—')}</td><td>${esc(r.site||'—')}</td><td>${esc(r.item||'')}</td><td>${esc(r.pn||'')}</td><td>${esc(r.qty||'')}</td><td>${r.urgent?'<b style="color:#c62828">URGENT</b>':(r.status||'Open')}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:#888">No open RRQs</td></tr>';
+
+  const svcU=d.uavs.filter(u=>u.svc==='YES').length;
+
+  const html=`<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>OSPREY Weekly Status Report</title>
+  <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+  <style>
+  @page{size:A4;margin:1.6cm 1.4cm}
+  body{font-family:Calibri,Arial,sans-serif;color:#222;font-size:10.5pt}
+  .hdr{border-bottom:3pt solid #1f4e79;padding-bottom:10pt;margin-bottom:14pt}
+  .hdr h1{color:#1f4e79;font-size:22pt;margin:0;letter-spacing:-0.5pt}
+  .hdr .s1{color:#1f6feb;font-size:11pt;font-weight:bold;letter-spacing:2pt;text-transform:uppercase}
+  .meta{color:#555;font-size:9.5pt;margin-top:8pt}
+  .meta b{color:#1f4e79}
+  h2{color:#fff;background:#1f4e79;font-size:12pt;padding:5pt 10pt;margin:18pt 0 0;border-radius:2pt}
+  .kpibar{display:table;width:100%;margin:12pt 0 4pt;border-collapse:separate;border-spacing:6pt 0}
+  .kpi{display:table-cell;background:#eef3fa;border:0.5pt solid #cfe0f5;border-radius:4pt;padding:8pt 6pt;text-align:center;width:25%}
+  .kpi b{color:#1f4e79;font-size:17pt;display:block;line-height:1}
+  .kpi span{font-size:8.5pt;color:#555;text-transform:uppercase;letter-spacing:0.5pt}
+  table{border-collapse:collapse;width:100%;margin-top:4pt;margin-bottom:4pt}
+  th{background:#dce6f4;color:#1f4e79;font-size:9pt;padding:5pt 7pt;text-align:left;border:0.5pt solid #b8cce4;font-weight:bold}
+  td{border:0.5pt solid #ccc;padding:4pt 7pt;font-size:9pt;vertical-align:top}
+  tr:nth-child(even) td{background:#f6f9fd}
+  td.rmk{white-space:normal;min-width:120pt;max-width:170pt;word-wrap:break-word}
+  td.nd{white-space:normal;min-width:110pt;font-size:8.5pt}
+  .foot{margin-top:22pt;border-top:0.5pt solid #ccc;padding-top:8pt;font-size:8pt;color:#999;text-align:center}
+  </style></head><body>
+  <div class="hdr">
+    <div class="s1">OSPREY · Maintenance Manager</div>
+    <h1>Weekly Fleet Status Report</h1>
+    <div class="meta">Hermes 900 · Thai Navy Fleet &nbsp;|&nbsp; Reporting period: <b>${fmtLong(fromV)}</b> to <b>${fmtLong(toV)}</b> &nbsp;|&nbsp; Generated: ${gen}</div>
+  </div>
+
+  <h2>1 · UAV Fleet Status</h2>
+  <table><tr><th>Tail No.</th><th>Location</th><th>Status</th><th>Flight Hours</th><th>Engine</th><th>Next Due Maintenance</th><th>Remarks</th></tr>${uavRows}</table>
+
+  <h2>2 · Engine Status</h2>
+  <table><tr><th>Engine S/N</th><th>UAV</th><th>Location</th><th>Status</th><th>Engine Hours</th><th>Next Due Maintenance</th><th>Remarks</th></tr>${engRows}</table>
+
+  <h2>3 · Ground Systems (GCS / GDT / Satcom)</h2>
+  <table><tr><th>Type</th><th>Unit</th><th>Location</th><th>Status</th><th>Next Due Maintenance</th><th>Remarks</th></tr>${groundRows}</table>
+
+  <h2>4 · TIFs — Reporting Period</h2>
+  <table><tr><th>Date</th><th>System</th><th>Description</th><th>Status</th><th>Remarks</th></tr>${tifRows}</table>
+
+  <h2>5 · Service Bulletins — Reporting Period</h2>
+  <table><tr><th>SB #</th><th>Date</th><th>System</th><th>Description</th><th>Status</th></tr>${sbRows}</table>
+
+  <h2>6 · Open RMAs (All Outstanding)</h2>
+  <table><tr><th>Date</th><th>Form #</th><th>Tail</th><th>Item</th><th>Part #</th><th>Status</th><th>Shipped</th></tr>${rmaRows}</table>
+
+  <h2>7 · Open RRQs (All Outstanding)</h2>
+  <table><tr><th>Date</th><th>Form #</th><th>Site</th><th>Item</th><th>Part #</th><th>Qty</th><th>Status</th></tr>${rrqRows}</table>
+
+  </body></html>`;
+
+  const blob=new Blob(['\ufeff'+html],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`OSPREY_Weekly_Report_${fromV}_to_${toV}.doc`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('📄 Word report downloaded');
+}
+
 function page(){
   switch(S.tab){
     case'home':return pgHome();case'uav':return pgUAV();case'gcs':return pgGCS();
     case'eng':return pgEng();case'eparts':return pgEParts();case'gse':return pgGSE();
     case'pay':return pgPay();case'tif':return pgTIF();case'sb':return pgSB();
     case'rma':return pgRMA();case'rrq':return pgRRQ();case'flt':return pgFlt();
+    case'settings':return pgSettings();
     default:return'';
   }
 }
@@ -2103,6 +2261,11 @@ function bindAll(){
   const be=document.getElementById('bxl'),bb=document.getElementById('bbk'),br=document.getElementById('brs'),ri=document.getElementById('ri');
   if(be)be.addEventListener('click',exportExcel);
   document.querySelectorAll('.blo').forEach(b=>b.addEventListener('click',()=>{if(confirm('Logout?'))logout();}));
+  const stR=document.getElementById('st-report');if(stR)stR.addEventListener('click',downloadWordReport);
+  const stB=document.getElementById('st-backup');if(stB)stB.addEventListener('click',backup);
+  const stE=document.getElementById('st-excel');if(stE)stE.addEventListener('click',exportExcel);
+  const stRs=document.getElementById('st-restore'),stRi=document.getElementById('st-ri');
+  if(stRs&&stRi){stRs.addEventListener('click',()=>stRi.click());stRi.addEventListener('change',e=>{if(e.target.files[0])restore(e.target.files[0])});}
   if(bb)bb.addEventListener('click',backup);
   if(br)br.addEventListener('click',()=>ri.click());
   if(ri)ri.addEventListener('change',e=>{if(e.target.files[0])restore(e.target.files[0])});
