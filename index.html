@@ -77,15 +77,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .pvt-lg .cell-d{font-size:12px;font-weight:700;line-height:1.15;display:block}
 .pvt-lg .cell-s{font-size:9px;font-weight:400;opacity:.7;display:block;margin-top:1px}
 .pvt{border-collapse:collapse;font-size:10px}
-.pvt th.lh{background:var(--bg4);color:var(--text2);font-size:8px;font-weight:600;padding:4px 6px;border:none;border-bottom:1px solid var(--border2);border-right:1px solid var(--border);white-space:nowrap;text-align:left;letter-spacing:.04em;text-transform:uppercase}
+.pvt th.lh{background:var(--bg4);color:var(--text2);font-size:10px;font-weight:600;padding:4px 6px;border:none;border-bottom:1px solid var(--border2);border-right:1px solid var(--border);white-space:nowrap;text-align:left;letter-spacing:.04em;text-transform:uppercase}
 .pvt th.ch{background:#1b212b;color:var(--text);font-weight:700;padding:4px 6px;border:none;border-bottom:1px solid var(--border2);text-align:center;white-space:nowrap}
 .pvt th.ch .t{font-size:11px;font-weight:700;color:#fff;display:block}
-.pvt th.ch .s{font-size:8px;color:var(--text3);display:block;margin-top:1px}
+.pvt th.ch .s{font-size:9px;color:var(--text3);display:block;margin-top:1px}
 .pvt td.rl{background:var(--bg4);color:var(--text2);font-size:9px;font-weight:500;padding:3px 6px;border:none;border-bottom:1px solid #1b2230;border-right:1px solid var(--border);white-space:nowrap;max-width:130px}
-.pvt td.rf{background:var(--bg2);color:var(--text3);font-size:8px;padding:3px 4px;border:1px solid var(--border);white-space:nowrap}
+.pvt td.rf{background:var(--bg2);color:var(--text3);font-size:9px;padding:5px 6px;border:1px solid var(--border);white-space:nowrap}
 .pvt td.dc{border:1px solid var(--border);text-align:center;padding:2px 4px;white-space:nowrap;vertical-align:middle}
 .pvt td.dc.ed{cursor:pointer;transition:filter .1s}.pvt td.dc.ed:hover{filter:brightness(1.2);outline:1px solid var(--gold3)}
-.pvt tr.sep td,.pvt tr.sep th{background:#111827;color:#8ea0b8;font-size:8px;font-weight:700;padding:2px 6px;border:none;border-top:1px solid var(--border);border-bottom:1px solid var(--border);letter-spacing:.06em;text-transform:uppercase}
+.pvt tr.sep td,.pvt tr.sep th{background:#111827;color:#8ea0b8;font-size:9px;font-weight:700;padding:2px 6px;border:none;border-top:1px solid var(--border);border-bottom:1px solid var(--border);letter-spacing:.06em;text-transform:uppercase}
 .pvt tr.pvt tr.eng-row td.rl{background:#1d2a3a}
 .pvt .cell-d{font-size:10px;font-weight:700;line-height:1.1;display:block}
 .pvt .cell-s{font-size:7px;font-weight:400;opacity:.7;display:block;margin-top:1px}
@@ -380,7 +380,7 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
 </style></head><body>
 <div class="app" id="app"></div><script>
 /* ═══════════════════════════════════════════════════════
-   © 2026 Tomer Sudman — OSPREY Maintenance Manager
+   © 2026 Tomer Sudman - OSPREY Maintenance Manager
    All rights reserved. Unauthorized copying, modification
    or distribution of this software is prohibited.
    ═══════════════════════════════════════════════════════ */
@@ -1397,8 +1397,8 @@ function pgGCS(){
       if(row.sep){t+=`<tr class="sep"><td colspan="${1+list.length}"><span class="seplbl">${row.sep}</span></td></tr>`;return;}
       if(row.type==='svc'){
         t+=`<tr><td class="rl">Svc</td>${list.map(u=>`<td class="dc ${svcCl(u.svc)} ed" data-ek="svc" data-id="${u.id}" data-list="${lk}" data-type="select_svc"><span class="cell-d">${u.svc}</span></td>`).join('')}</tr>`;
-        t+=`<tr><td class="rl" style="font-size:8px">Remarks</td>${list.map(u=>`<td class="dc cn ed" data-ek="remarks" data-id="${u.id}" data-list="${lk}" data-type="textarea"><span class="cell-d" style="font-size:8px">${u.remarks?(u.remarks.slice(0,12)+'…'):'—'}</span></td>`).join('')}</tr>`;
-        if(lk!=='satcoms')t+=`<tr><td class="rl" style="font-size:8px">Location</td>${list.map(u=>`<td class="dc cn ed" data-ek="site" data-id="${u.id}" data-list="${lk}" data-type="select_gcs_site"><span class="cell-d">${u.site}</span></td>`).join('')}</tr>`;
+        t+=`<tr><td class="rl">Remarks</td>${list.map(u=>`<td class="dc cn ed" data-ek="remarks" data-id="${u.id}" data-list="${lk}" data-type="textarea"><span class="cell-d" style="font-size:11px">${u.remarks?(u.remarks.slice(0,12)+'…'):'—'}</span></td>`).join('')}</tr>`;
+        if(lk!=='satcoms')t+=`<tr><td class="rl">Location</td>${list.map(u=>`<td class="dc cn ed" data-ek="site" data-id="${u.id}" data-list="${lk}" data-type="select_gcs_site"><span class="cell-d">${u.site}</span></td>`).join('')}</tr>`;
         return;
       }
       t+=`<tr><td class="rl">${row.lbl}</td>${list.map(u=>dateTd(u[row.key],row.freq,row.key,u.id,lk,true)).join('')}</tr>`;
@@ -1473,7 +1473,7 @@ function pgEng(){
     tbl+=`<tr><td class="rl">${row.lbl}</td>${d.engines.map(e=>eCell(e,row)).join('')}</tr>`;
   });
   tbl+=`</tbody></table></div>`;
-  return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">Engine maintenance</div><div class="ph-sub">Rows = checks, Columns = engines (10 total: 7 installed + 3 spare)</div></div><button class="btn primary" data-a="add-engine">+ Add Engine</button></div>
+  return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">Engine maintenance</div><div class="ph-sub">Click any cell to edit • HH:MM format for hours</div></div><button class="btn primary" data-a="add-engine">+ Add Engine</button></div>
   <div class="ov-grid">${tbl}</div></div></div>`;
 }
 function pgEParts(){
@@ -1758,7 +1758,7 @@ function pgFlt(){
     }
   },100);
 
-  return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">Flights & faults</div><div class="ph-sub">${fl.length} flights · ${fmtHHMM(totalFH)} total · ${fa.length} faults</div></div>
+  return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">Flights & faults</div><div class="ph-sub">Flight log and fault tracking</div></div>
   <div class="ph-r"><button class="btn primary" data-a="add-flight">+ Flight</button><button class="btn primary" data-a="add-fault">+ Fault</button></div></div>
   <div class="stat-strip">
     <div class="stat-item"><div class="stat-label">Total Flights</div><div class="stat-val">${fl.length}</div></div>
@@ -1769,7 +1769,7 @@ function pgFlt(){
     <div class="stat-div"></div>
     <div class="stat-item"><div class="stat-label">This Month</div><div class="stat-val">${fl.filter(f=>f.date&&f.date.startsWith(new Date().toISOString().slice(0,7))).length}</div></div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+  <div class="chart-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:14px;height:220px">
       <div style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Flight Hours by Month (last 12 months)</div>
       <div style="position:relative;height:168px"><canvas id="fhChart"></canvas></div>
@@ -2056,6 +2056,9 @@ function calcFT(){
 }
 
 function render(){
+  const _prevContent=document.querySelector('.content');
+  const _scrollY=_prevContent?_prevContent.scrollTop:0;
+  const _scrolls=[];document.querySelectorAll('.tbl-scroll,.ov-block,.ov-left,.ov-right-cols .ov-zone').forEach((el,i)=>{if(el.scrollLeft||el.scrollTop)_scrolls.push([i,el.scrollLeft,el.scrollTop]);});
   const sbItem=t=>`<div class="sb-i${S.tab===t.id?' on':''}" data-tab="${t.id}"><span class="ic">${SB_IC[t.id]||''}</span>${t.l}</div>`;
   const sidebar=`
     <aside class="sidebar">
@@ -2089,7 +2092,7 @@ function render(){
       </div>
     </div>
     <div class="content">${(()=>{const t=TABS.find(x=>x.id===S.tab);const g=TAB_GROUPS.find(gr=>gr.ids.includes(S.tab));return g&&t?`<div class="ph-crumb">${g.h} / <b>${t.l}</b></div>`:''})()}${page()}
-      <div style="text-align:center;padding:26px 10px 14px;font-size:9.5px;color:var(--text3);letter-spacing:.04em">© 2026 Tomer Sudman — OSPREY Maintenance Manager. All rights reserved.</div>
+      <div style="text-align:center;padding:26px 10px 14px;font-size:9.5px;color:var(--text3);letter-spacing:.04em">© 2026 Tomer Sudman - OSPREY Maintenance Manager. All rights reserved.</div>
     </div>
     </div>
     </div>
@@ -2104,6 +2107,8 @@ function render(){
     ${S.modal?renderModal():''}
   `;
   bindAll();
+  if(_scrollY){const c=document.querySelector('.content');if(c)c.scrollTop=_scrollY;}
+  if(_scrolls.length){const els=document.querySelectorAll('.tbl-scroll,.ov-block,.ov-left,.ov-right-cols .ov-zone');_scrolls.forEach(([i,sl,st])=>{if(els[i]){els[i].scrollLeft=sl;els[i].scrollTop=st;}});}
 }
 
 function pgSettings(){
@@ -2129,7 +2134,7 @@ function pgSettings(){
     '<button class="btn primary" id="st-backup">💾 Download Backup</button><button class="btn" id="st-restore">📂 Restore from File</button><input type="file" id="st-ri" accept=".json" style="display:none">')}
   ${card('📊','Excel Export','Export all maintenance tables to an Excel-compatible spreadsheet.',
     '<button class="btn" id="st-excel">⬇ Export to Excel</button>')}
-  <div style="font-size:10px;color:var(--text3);max-width:560px;margin-top:6px;line-height:1.6">Passwords and role management are configured in the Google Apps Script backend. © 2026 Tomer Sudman — OSPREY Maintenance Manager.</div>
+  <div style="font-size:10px;color:var(--text3);max-width:560px;margin-top:6px;line-height:1.6">Passwords and role management are configured in the Google Apps Script backend. © 2026 Tomer Sudman - OSPREY Maintenance Manager.</div>
   `;
 }
 
