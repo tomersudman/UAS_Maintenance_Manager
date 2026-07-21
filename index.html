@@ -314,6 +314,7 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
 /* mini progress bar */
 .mbar{display:block;height:3px;border-radius:2px;background:rgba(255,255,255,.08);margin-top:3px;overflow:hidden;min-width:52px}
 .mbar i{display:block;height:100%;border-radius:2px;background:currentColor;opacity:.8}
+.chart-grid{grid-template-columns:1fr 1fr}
 
 .ph-crumb{font-size:11px;color:var(--text3);margin-bottom:6px}
 .ph-crumb b{color:var(--text2);font-weight:500}
@@ -340,15 +341,15 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
   .fleet-sum{display:block!important}
 }
 .fleet-sum{display:none}
-.fs-row2{display:flex;flex-wrap:wrap;gap:5px;padding:9px 12px;border-bottom:1px solid #1b2230}
-.fs-row2:last-child{border-bottom:none}
-.fs-row{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #1b2230}
-.fs-row:last-child{border-bottom:none}
-.fs-tail{font-size:14px;font-weight:700;color:#f0f4fa;width:44px}
-.fs-pill{font-size:9px;font-weight:600;padding:2px 8px;border-radius:9px}
-.fs-due{margin-left:auto;text-align:right}
-.fs-due .d1{font-size:11px;font-weight:600}
-.fs-due .d2{font-size:8.5px;opacity:.65}
+.fh-table{width:100%;border-collapse:collapse}
+.fh-table th{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;font-weight:600;text-align:left;padding:7px 10px;border-bottom:1px solid var(--border2);white-space:nowrap}
+.fh-table td{padding:9px 10px;border-bottom:1px solid #1b2230;font-size:11px;vertical-align:middle}
+.fh-table tr:last-child td{border-bottom:none}
+.fh-tail{font-size:14px;font-weight:700;color:#f0f4fa}
+.fs-pill{font-size:9px;font-weight:600;padding:2px 8px;border-radius:9px;white-space:nowrap}
+.fh-hrs{color:var(--text2);white-space:nowrap}
+.fh-rmk{color:var(--text3);line-height:1.4;min-width:80px}
+.fh-due{white-space:nowrap;font-size:11px}
 
 .lbl-short{display:none}
 @media(max-width:820px){.lbl-full{display:none}.lbl-short{display:inline}}
@@ -1295,24 +1296,23 @@ function pgHome(){
 
 
   const fleetSum=(()=>{
-    const items=d.uavs.map(u=>{
-      const e=d.engines.find(x=>x.uav===u.tail);
+    const clMap={cg:'#4ade80',cy:'#fbbf24',co:'#fb923c',cr:'#f87171',cn:'var(--text3)'};
+    const rows=d.uavs.map(u=>{
       const checks=[['Monthly','monthly','monthly'],['3-Month','q3','3m'],['6-Month','q6','6m'],['Corrosion 5Y','cor5y','5y'],['Pitot 3Y','pitot3y','3y']];
       let best=null;
       checks.forEach(c=>{if(!u[c[1]])return;const due=addInt(u[c[1]],c[2]);const dd=du(due);if(best===null||dd<best.d)best={lbl:c[0],d:dd,cl:cDate(dd,c[2])};});
       const svcC=u.svc==='YES'?['#4ade80','rgba(63,185,80,.14)']:u.svc==='NO'?['#f87171','rgba(248,81,73,.15)']:['#fbbf24','rgba(227,179,65,.14)'];
-      const clMap={cg:'#4ade80',cy:'#fbbf24',co:'#fb923c',cr:'#f87171',cn:'var(--text3)'};
-      return`<div class="fs-row2">
-        <div style="display:flex;align-items:center;gap:8px;width:100%">
-          <span class="fs-tail">${u.tail}</span>
-          <span class="fs-pill" style="color:${svcC[0]};background:${svcC[1]}">${u.svc}</span>
-          <span style="font-size:10px;color:var(--text3)">✈ ${fmtHHMM(+u.fh)||'00:00'}</span>
-          <span class="fs-due">${best?`<span class="d1" style="color:${clMap[best.cl]||'var(--text3)'}">${best.lbl}</span> <span class="d2" style="color:${clMap[best.cl]||'var(--text3)'}">${fdays(best.d)}</span>`:`<span class="d2">no dates set</span>`}</span>
-        </div>
-        ${u.remarks?`<div style="font-size:10px;color:var(--text3);width:100%;padding-left:2px;line-height:1.4">📝 ${u.remarks}</div>`:''}
-      </div>`;
+      return`<tr>
+        <td class="fh-tail">${u.tail}</td>
+        <td><span class="fs-pill" style="color:${svcC[0]};background:${svcC[1]}">${u.svc}</span></td>
+        <td class="fh-hrs">${fmtHHMM(+u.fh)||'00:00'}</td>
+        <td class="fh-rmk">${u.remarks||''}</td>
+        <td class="fh-due">${best?`<span style="color:${clMap[best.cl]||'var(--text3)'};font-weight:600">${best.lbl}</span> <span style="color:${clMap[best.cl]||'var(--text3)'};opacity:.7">${fdays(best.d)}</span>`:`<span style="opacity:.6">no dates set</span>`}</td>
+      </tr>`;
     }).join('');
-    return`<div class="ov-block fleet-sum" style="margin-bottom:12px"><div class="ov-block-hdr">✈ FLEET HEALTH</div>${items}</div>`;
+    return`<div class="ov-block fleet-sum" style="margin-bottom:12px"><div class="ov-block-hdr">✈ FLEET HEALTH</div>
+      <table class="fh-table"><thead><tr><th>UAV</th><th>Svc</th><th>Flight Hrs</th><th>Remarks</th><th>Next Inspection</th></tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
   })();
   const fhChartBlock=`<div class="ov-block" style="padding:12px">
       <div class="ov-block-hdr" style="margin:-12px -12px 10px">📈 FLIGHT HOURS — LAST 12 MONTHS</div>
@@ -1769,7 +1769,7 @@ function pgFlt(){
     <div class="stat-div"></div>
     <div class="stat-item"><div class="stat-label">This Month</div><div class="stat-val">${fl.filter(f=>f.date&&f.date.startsWith(new Date().toISOString().slice(0,7))).length}</div></div>
   </div>
-  <div class="chart-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+  <div class="chart-grid" style="display:grid;gap:10px;margin-bottom:14px">
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:14px;height:220px">
       <div style="font-size:9px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Flight Hours by Month (last 12 months)</div>
       <div style="position:relative;height:168px"><canvas id="fhChart"></canvas></div>
