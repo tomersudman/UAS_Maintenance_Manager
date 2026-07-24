@@ -10,6 +10,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>UAS Maintenance Manager — Hermes 900</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -2259,13 +2260,36 @@ function downloadWordReport(){
 
   </body></html>`;
 
-  const blob=new Blob(['\ufeff'+html],{type:'application/msword'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;a.download=`OSPREY_Weekly_Report_${fromV}_to_${toV}.doc`;
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  toast('📄 Word report downloaded');
+  const fname=`OSPREY_Weekly_Report_${fromV}_to_${toV}`;
+  const dl=(blob,ext)=>{
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;a.download=fname+ext;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url),1500);
+  };
+  // Build a real .docx (ZIP/OOXML) — opens in Word on phone, tablet and PC
+  if(typeof JSZip!=='undefined'){
+    try{
+      const zip=new JSZip();
+      zip.file('[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/afchunk.htm" ContentType="text/html"/></Types>`);
+      zip.folder('_rels').file('.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>`);
+      const w=zip.folder('word');
+      w.file('document.xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body><w:altChunk r:id="htmlChunk"/><w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="907" w:right="794" w:bottom="907" w:left="794"/></w:sectPr></w:body></w:document>`);
+      w.folder('_rels').file('document.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="htmlChunk" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk" Target="afchunk.htm"/></Relationships>`);
+      w.file('afchunk.htm',html);
+      zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'})
+        .then(b=>{dl(b,'.docx');toast('📄 Word report downloaded');})
+        .catch(()=>{dl(new Blob(['\ufeff'+html],{type:'application/msword'}),'.doc');toast('📄 Report downloaded');});
+      return;
+    }catch(e){}
+  }
+  dl(new Blob(['\ufeff'+html],{type:'application/msword'}),'.doc');
+  toast('📄 Report downloaded');
 }
 
 function page(){
