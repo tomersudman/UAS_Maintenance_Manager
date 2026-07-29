@@ -1594,17 +1594,20 @@ function pgGSE(){
   /* Tools Calibration tables - split by location */
   function toolsTable(loc){
     const rows=d.gse_tools.filter(g=>g.loc===loc);
+    const canEd=canAdmin();
     return`<div class="sdiv">Annual Calibration Tools — ${loc}</div>
   <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
-  <thead><tr><th>Item</th><th>S/N</th><th>Location</th><th>Svc</th><th style="white-space:nowrap">Annual Calib.</th><th class="ell-wide">Remarks</th></tr></thead>
-  <tbody>${rows.length===0?'<tr><td colspan="6" style="text-align:center;padding:14px;color:var(--text3)">No tools at '+loc+'</td></tr>':rows.map(g=>`<tr>
+  <thead><tr><th>Item</th><th>S/N</th><th>Location</th><th>Svc</th><th style="white-space:nowrap">Annual Calib.</th><th class="ell-wide">Remarks</th>${canEd?'<th style="width:1px"></th>':''}</tr></thead>
+  <tbody>${rows.length===0?`<tr><td colspan="${canEd?7:6}" style="text-align:center;padding:14px;color:var(--text3)">No tools at ${loc}</td></tr>`:rows.map(g=>`<tr>
     ${editTd(g.item,'item',g.id,'gse_tools','text')}
     ${editTd(g.sn||'—','sn',g.id,'gse_tools','text')}
     ${editTd(g.loc,'loc',g.id,'gse_tools','select_gse_loc')}
     <td class="ed" data-ek="svc" data-id="${g.id}" data-list="gse_tools" data-type="select_svc">${svcBadge(g.svc)}</td>
     <td class="ed" data-ek="calib" data-id="${g.id}" data-list="gse_tools" data-type="date" style="width:1px">${dateBadge(g.calib,'1y','calib',g.id,'gse_tools')}</td>
     <td class="ed ell-wide" data-ek="remarks" data-id="${g.id}" data-list="gse_tools" data-type="textarea">${g.remarks||'—'}</td>
-  </tr>`).join('')}</tbody></table></div></div>`;
+    ${canEd?`<td style="text-align:center"><button class="btn sm danger" data-a="del-gse-tool" data-id="${g.id}" title="Remove tool">✕</button></td>`:''}
+  </tr>`).join('')}</tbody></table></div></div>
+  ${canEd?`<div style="margin:6px 0 18px"><button class="btn sm" data-a="add-gse-tool" data-loc="${loc}">+ Add tool at ${loc}</button></div>`:''}`;
   }
   const toolsHtml=toolsTable('U-Tapao')+toolsTable('Songkhla');
 
@@ -2128,7 +2131,7 @@ function render(){
     <div class="nav">
       <div class="brand">
         <img src="${LOGO}" style="height:46px;width:auto;filter:drop-shadow(0 0 8px rgba(56,139,253,.5))" alt="H900">
-        <div><div class="brand-t">OSPREY</div><div class="brand-s">Maintenance Manager</div></div>
+        <div><div class="brand-t">OSPREY WINGMAN</div><div class="brand-s">Maintenance Manager</div></div>
       </div>
       <div class="nav-scroll"><div style="display:flex">${TABS.map(t=>`<div class="tab${S.tab===t.id?' on':''}" data-tab="${t.id}">${t.l}</div>`).join('')}</div></div>
       <div class="nav-btns">
@@ -2364,7 +2367,7 @@ function page(){
 
 const LMAP={flight:'flights',fault:'faults',tif:'tifs',sb:'sbs',rma:'rmas',rrq:'rrqs',engine:'engines'};
 const AMAP={'add-tif':'tif','add-sb':'sb','add-rma':'rma','add-rrq':'rrq','add-flight':'flight','add-fault':'fault','add-engine':'engine'};
-const DMAP={'del-tif':'tifs','del-sb':'sbs','del-rma':'rmas','del-rrq':'rrqs','del-flight':'flights','del-fault':'faults','del-epart':'eparts','del-engine':'engines'};
+const DMAP={'del-tif':'tifs','del-sb':'sbs','del-rma':'rmas','del-rrq':'rrqs','del-flight':'flights','del-fault':'faults','del-epart':'eparts','del-engine':'engines','del-gse-tool':'gse_tools'};
 
 function gfd(){
   const fm=document.getElementById('mf');if(!fm)return{};
@@ -2438,6 +2441,13 @@ function bindAll(){
       logAction(`Added Engine Part row (${type})`,'eparts');
       sv(d);render();toast('Row added');return;
     }
+    if(a==='add-gse-tool'){
+      const loc=el.dataset.loc||'U-Tapao';
+      const maxId=d.gse_tools.reduce((m,p)=>Math.max(m,p.id),0);
+      d.gse_tools.push({id:maxId+1,item:'New tool',sn:'',loc,svc:'YES',calib:'',remarks:''});
+      logAction(`Added calibration tool (${loc})`,'gse_tools');
+      sv(d);render();toast('Tool added — click cells to fill in');return;
+    }
     if(a==='rma-ship-box'){
       if(!canAdmin()&&!(USER&&USER.role==='OPERATOR')){toast('🔒 Not allowed');return;}
       const r=d.rmas.find(x=>x.id===id);if(!r)return;
@@ -2497,8 +2507,12 @@ function bindAll(){
     }
     if(AMAP[a]){S.modal=AMAP[a];S.edit={};render();return}
     if(DMAP[a]){
-      const list=d[DMAP[a]],idx=list.findIndex(r=>r.id===id);
-      if(idx>=0&&confirm('Delete?')){list.splice(idx,1);sv(d);render();toast('Deleted.','r');}
+      const lk=DMAP[a],list=d[lk],idx=list.findIndex(r=>r.id===id);
+      if(idx>=0&&confirm('Delete?')){
+        const removed=list[idx];list.splice(idx,1);
+        logAction(`Deleted ${LIST_NAMES[lk]||lk} ${unitLabel(lk,removed)}`,lk);
+        sv(d);render();toast('Deleted.','r');
+      }
       return;
     }
   });
