@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="color-scheme:dark">
 <head>
 <meta charset="UTF-8">
 <meta name="theme-color" content="#0d1117">
-  <meta name="color-scheme" content="light dark">
+  <meta name="color-scheme" content="dark">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -785,7 +785,10 @@ let THEME=localStorage.getItem('uas_theme')||'dark';
 function applyTheme(){
   const light=THEME==='light';
   document.body.classList.toggle('light',light);
-  document.documentElement.style.colorScheme=light?'light':'dark';
+  const scheme=light?'light':'dark';
+  document.documentElement.style.colorScheme=scheme;
+  const cs=document.querySelector('meta[name="color-scheme"]');
+  if(cs)cs.setAttribute('content',scheme);
   const tc=document.querySelector('meta[name="theme-color"]');
   if(tc)tc.setAttribute('content',light?'#e6eaf0':'#0d1117');
 }
@@ -796,7 +799,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.07.30-02';
+const APP_BUILD='2026.08.03-01';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
