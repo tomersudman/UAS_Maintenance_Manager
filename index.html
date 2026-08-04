@@ -488,6 +488,12 @@ body.light .sb-item.active,body.light .sb-i.active{background:rgba(11,99,206,.10
 .floatbar::-webkit-scrollbar-thumb{background:var(--scroll-thumb);border-radius:6px;border:2px solid var(--scroll-track)}
 .floatbar::-webkit-scrollbar-thumb:hover{background:var(--text3)}
 
+
+/* GSE tools: shorten long tool names on phone */
+@media(max-width:820px){
+  .tool-name{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
+
 </style></head><body>
 <div class="app" id="app"></div><script>
 /* ═══════════════════════════════════════════════════════
@@ -862,7 +868,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.08.03-12';
+const APP_BUILD='2026.08.03-13';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -1765,7 +1771,7 @@ function pgGSE(){
   <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
   <thead><tr><th>Item</th><th>S/N</th><th>Location</th><th>Svc</th><th style="white-space:nowrap">Annual Calib.</th><th class="ell-wide">Remarks</th>${canEd?'<th style="width:1px"></th>':''}</tr></thead>
   <tbody>${rows.length===0?`<tr><td colspan="${canEd?7:6}" style="text-align:center;padding:14px;color:var(--text3)">No tools at ${loc}</td></tr>`:rows.map(g=>`<tr>
-    ${editTd(g.item,'item',g.id,'gse_tools','text')}
+    <td class="ed tool-name" data-ek="item" data-id="${g.id}" data-list="gse_tools" data-type="text" title="${(g.item||'').replace(/"/g,'&quot;')}">${g.item||'—'}</td>
     ${editTd(g.sn||'—','sn',g.id,'gse_tools','text')}
     ${editTd(g.loc,'loc',g.id,'gse_tools','select_gse_loc')}
     <td class="ed" data-ek="svc" data-id="${g.id}" data-list="gse_tools" data-type="select_svc">${svcBadge(g.svc)}</td>
