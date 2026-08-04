@@ -498,6 +498,8 @@ body.light .sb-item.active,body.light .sb-i.active{background:rgba(11,99,206,.10
 /* ═══ CONSTANTS ═══ */
 const TODAY=new Date();TODAY.setHours(0,0,0,0);
 const MS=864e5;
+function fmtLocal(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function todayStr(){return fmtLocal(new Date());}
 
 /* ═══════════ CLOUD SYNC CONFIG ═══════════ */
 const API_URL='https://script.google.com/macros/s/AKfycbwoRhcG8vujzhhGHT4YgjepivKU4JkSNMMbtzMueTdrqF_usIIorODgmQJK2_0XU_-q/exec'; // <-- paste your Apps Script Web App URL between the quotes
@@ -860,7 +862,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.08.03-07';
+const APP_BUILD='2026.08.03-12';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -891,9 +893,9 @@ function addInt(s,f){
   const d=new Date(Date.UTC(parts[0],parts[1]-1+mo,parts[2]));
   return d.toISOString().slice(0,10);
 }
-function du(s){if(!s)return null;const d=new Date(s);if(isNaN(d))return null;return Math.round((d-TODAY)/MS)}
-function fmtD(s){if(!s)return'—';const d=new Date(s);if(isNaN(d))return s;const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return String(d.getDate()).padStart(2,'0')+'-'+mo[d.getMonth()]+'-'+String(d.getFullYear()).slice(2)}
-function toI(s){if(!s)return'';const d=new Date(s);if(isNaN(d))return'';return d.toISOString().slice(0,10)}
+function du(s){if(!s)return null;const p=String(s).slice(0,10).split('-').map(Number);if(p.length!==3||p.some(isNaN))return null;const d=new Date(p[0],p[1]-1,p[2]);d.setHours(0,0,0,0);return Math.round((d-TODAY)/MS)}
+function fmtD(s){if(!s)return'—';const p=String(s).slice(0,10).split('-');if(p.length!==3)return s;const mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];const mi=(+p[1])-1;if(mi<0||mi>11)return s;return String(+p[2]).padStart(2,'0')+'-'+mo[mi]+'-'+String(p[0]).slice(2)}
+function toI(s){if(!s)return'';const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})/);if(m)return m[1]+'-'+m[2]+'-'+m[3];const d=new Date(s);if(isNaN(d))return'';return fmtLocal(d)}
 function fdays(d){if(d===null)return'';if(d<0)return Math.abs(d)+'d OVR';if(d===0)return'TODAY';return d+'d'}
 /* Hours HH:MM format */
 function fmtHHMM(h){if(h===''||h===null||isNaN(+h))return'—';const total=Math.abs(+h);const hh=Math.floor(total);const mm=Math.round((total-hh)*60);return(+h<0?'-':'')+String(hh).padStart(2,'0')+':'+String(mm).padStart(2,'0')}
@@ -1936,28 +1938,28 @@ function pgFlt(){
 
   const flightRows=filtered.map(f=>`<tr>
     <td class="dim">${fmtD(f.date)}</td>
-    <td class="ed bld" data-ek="uav" data-id="${f.id}" data-list="flights" data-type="select_uav">${f.uav||'—'}</td>
-    <td class="ed dim" data-ek="base" data-id="${f.id}" data-list="flights" data-type="select_base">${f.base||'—'}</td>
-    <td class="ed dim" data-ek="payload" data-id="${f.id}" data-list="flights" data-type="select_payload">${f.payload||'—'}</td>
-    <td class="ed mono" data-ek="to" data-id="${f.id}" data-list="flights" data-type="text">${f.to||'—'}</td>
-    <td class="ed mono" data-ek="lnd" data-id="${f.id}" data-list="flights" data-type="text">${f.lnd||'—'}</td>
+    <td class="bld">${f.uav||'—'}</td>
+    <td class="dim">${f.base||'—'}</td>
+    <td class="dim">${f.payload||'—'}</td>
+    <td class="mono">${f.to||'—'}</td>
+    <td class="mono">${f.lnd||'—'}</td>
     <td>${+f.total>0?badge(fmtHHMM(+f.total),'bgold'):`<span class="mono" style="color:var(--text2)">—</span>`}</td>
     <td class="mono" style="color:var(--text2)">${f.engTot?fmtHHMM(+f.engTot):'—'}</td>
-    <td class="ed" data-ek="objective" data-id="${f.id}" data-list="flights" data-type="select_objective">${f.objective||'—'}</td>
-    <td class="ed ell-wide" data-ek="remarks" data-id="${f.id}" data-list="flights" data-type="textarea">${f.remarks||'—'}</td>
-    <td><button class="btn sm danger" data-a="del-flight" data-id="${f.id}">✕</button></td>
+    <td>${f.objective||'—'}</td>
+    <td class="ell-wide">${f.remarks||'—'}</td>
+    <td style="white-space:nowrap;text-align:center"><button class="btn sm" data-a="edit-flight" data-id="${f.id}" title="Edit flight">✎</button> <button class="btn sm danger" data-a="del-flight" data-id="${f.id}">✕</button></td>
   </tr>`).join('');
 
   const faultRows=faSorted.map(f=>`<tr>
     <td class="dim">${fmtD(f.date)}</td>
-    <td class="ed" data-ek="uav" data-id="${f.id}" data-list="faults" data-type="select_uav">${f.uav||'—'}</td>
-    <td class="ed" data-ek="system" data-id="${f.id}" data-list="faults" data-type="select_fault_sys">${f.system||'—'}</td>
-    <td class="ed" data-ek="subsystem" data-id="${f.id}" data-list="faults" data-type="text">${f.subsystem||'—'}</td>
-    <td class="ed mono" data-ek="sn" data-id="${f.id}" data-list="faults" data-type="text">${f.sn||'—'}</td>
-    <td class="ed" data-ek="tif" data-id="${f.id}" data-list="faults" data-type="text">${f.tif||'—'}</td>
-    <td class="ed" data-ek="sentRepair" data-id="${f.id}" data-list="faults" data-type="select_svc_bool">${f.sentRepair?badge('Sent','by'):badge('No','bgr')}</td>
-    <td class="ed ell-wide" data-ek="remarks" data-id="${f.id}" data-list="faults" data-type="textarea">${f.remarks||'—'}</td>
-    <td><button class="btn sm danger" data-a="del-fault" data-id="${f.id}">✕</button></td>
+    <td>${f.uav||'—'}</td>
+    <td>${f.system||'—'}</td>
+    <td>${f.subsystem||'—'}</td>
+    <td class="mono">${f.sn||'—'}</td>
+    <td>${f.tif||'—'}</td>
+    <td>${f.sentRepair?badge('Sent','by'):badge('No','bgr')}</td>
+    <td class="ell-wide">${f.remarks||'—'}</td>
+    <td style="white-space:nowrap;text-align:center"><button class="btn sm" data-a="edit-fault" data-id="${f.id}" title="Edit fault">✎</button> <button class="btn sm danger" data-a="del-fault" data-id="${f.id}">✕</button></td>
   </tr>`).join('');
 
   setTimeout(()=>{
@@ -1980,7 +1982,7 @@ function pgFlt(){
     <div class="stat-div"></div>
     <div class="stat-item"><div class="stat-label">Faults</div><div class="stat-val">${fa.length}</div></div>
     <div class="stat-div"></div>
-    <div class="stat-item"><div class="stat-label">This Month</div><div class="stat-val">${fl.filter(f=>f.date&&f.date.startsWith(new Date().toISOString().slice(0,7))).length}</div></div>
+    <div class="stat-item"><div class="stat-label">This Month</div><div class="stat-val">${fl.filter(f=>f.date&&f.date.startsWith(todayStr().slice(0,7))).length}</div></div>
   </div>
   <div class="chart-grid" style="display:grid;gap:10px;margin-bottom:14px">
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:14px;height:220px">
@@ -2099,7 +2101,8 @@ function renderModal(){
     g(f('Subsystem',inp('subsystem',r.subsystem)),
       f('S/N',inp('sn',r.sn)),
       f('TIF #',inp('tif',r.tif)))+
-    g(f('Remarks',inp('remarks',r.remarks)));
+    g(f('Sent for repair',sel('sentRepair',['NO','YES'],r.sentRepair?'YES':'NO')),
+      f('Remarks',inp('remarks',r.remarks)));
 
   const forms={
     tif:g(f('TIF Date (leave blank for today)',inp('date',toI(r.date),'date')),f('Description',inp('desc',r.desc)),f('Category',sel('cat',CATS,r.cat))),
@@ -2319,7 +2322,7 @@ function render(){
       ${TAB_GROUPS.map(g=>`<div class="more-h">${g.h}</div>${g.ids.map(id=>{const t=TABS.find(x=>x.id===id);return t.ext?`<div class="more-i" data-ext="${id}">${SB_IC[id]||''}${t.l}<span style="margin-left:auto;opacity:.5">↗</span></div>`:`<div class="more-i${S.tab===id?' on':''}" data-tab="${id}">${SB_IC[id]||''}${t.l}</div>`}).join('')}`).join('')}
     </div></div>`:''}
     ${S.modal?renderModal():''}
-    ${S.rmaDate?(()=>{const r=S.data.rmas.find(x=>x.id===S.rmaDate.id);const today=new Date().toISOString().slice(0,10);const isShip=S.rmaDate.field==='shipped';return`<div class="ov-bg"><div class="modal" style="max-width:340px">
+    ${S.rmaDate?(()=>{const r=S.data.rmas.find(x=>x.id===S.rmaDate.id);const today=todayStr();const isShip=S.rmaDate.field==='shipped';return`<div class="ov-bg"><div class="modal" style="max-width:340px">
       <div class="m-title"><span>${isShip?'📦 Shipped Date':'✅ Received Date'}${r&&r.item?' — '+r.item:''}</span><button class="btn sm" data-a="rma-date-cancel" style="font-size:13px;padding:2px 6px">✕</button></div>
       <div style="padding:16px">
         <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Select ${isShip?'shipped':'received'} date</div>
@@ -2364,8 +2367,8 @@ function pgSettings(){
 }
 
 function _mondayOf(d){const x=new Date(d);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);return x;}
-function repDefaultFrom(){return _mondayOf(new Date()).toISOString().slice(0,10);}
-function repDefaultTo(){const m=_mondayOf(new Date());m.setDate(m.getDate()+6);return m.toISOString().slice(0,10);}
+function repDefaultFrom(){return fmtLocal(_mondayOf(new Date()));}
+function repDefaultTo(){const m=_mondayOf(new Date());m.setDate(m.getDate()+6);return fmtLocal(m);}
 function downloadWordReport(){
   const d=S.data;
   const fromV=(document.getElementById('rep-from')||{}).value||repDefaultFrom();
@@ -2548,46 +2551,8 @@ function gfd(){
   return d;
 }
 
-function bindAll(){
-  document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click',()=>{S.tab=el.dataset.tab;S.moreOpen=false;render()}));
-  document.querySelectorAll('.sb-ext,[data-ext]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();openIMS();}));
-  const bnm=document.getElementById('bn-more');if(bnm)bnm.addEventListener('click',()=>{S.moreOpen=!S.moreOpen;render()});
-  const mbg=document.getElementById('more-bg');if(mbg)mbg.addEventListener('click',()=>{S.moreOpen=false;render()});
-  const be=document.getElementById('bxl'),bb=document.getElementById('bbk'),br=document.getElementById('brs'),ri=document.getElementById('ri');
-  if(be)be.addEventListener('click',exportExcel);
-  document.querySelectorAll('.blo').forEach(b=>b.addEventListener('click',()=>{if(confirm('Logout?'))logout();}));
-  const stR=document.getElementById('st-report');if(stR)stR.addEventListener('click',downloadWordReport);
-  const stB=document.getElementById('st-backup');if(stB)stB.addEventListener('click',backup);
-  const stE=document.getElementById('st-excel');if(stE)stE.addEventListener('click',exportExcel);
-  const stRs=document.getElementById('st-restore'),stRi=document.getElementById('st-ri');
-  if(stRs&&stRi){stRs.addEventListener('click',()=>stRi.click());stRi.addEventListener('change',e=>{if(e.target.files[0])restore(e.target.files[0])});}
-  if(bb)bb.addEventListener('click',backup);
-  if(br)br.addEventListener('click',()=>ri.click());
-  if(ri)ri.addEventListener('change',e=>{if(e.target.files[0])restore(e.target.files[0])});
-
-  /* Flight live search */
-  const fltSearch=document.getElementById('flt-search');
-  if(fltSearch){fltSearch.addEventListener('input',()=>{
-    flightFilter=fltSearch.value.toLowerCase();
-    const d=S.data,fl=d.flights;
-    const flSorted=[...fl].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.id-a.id);
-    const filtered=flightFilter?flSorted.filter(f=>(f.uav&&f.uav.toLowerCase().includes(flightFilter))||(f.base&&f.base.toLowerCase().includes(flightFilter))||(f.payload&&f.payload.toLowerCase().includes(flightFilter))||(f.objective&&f.objective.toLowerCase().includes(flightFilter))):flSorted;
-    const tbody=document.getElementById('flt-tbody');
-    if(tbody)tbody.innerHTML=filtered.map(f=>`<tr><td class="dim">${fmtD(f.date)}</td><td class="ed bld" data-ek="uav" data-id="${f.id}" data-list="flights" data-type="select_uav">${f.uav||'—'}</td><td class="ed dim" data-ek="base" data-id="${f.id}" data-list="flights" data-type="select_base">${f.base||'—'}</td><td class="ed dim" data-ek="payload" data-id="${f.id}" data-list="flights" data-type="select_payload">${f.payload||'—'}</td><td class="ed mono" data-ek="to" data-id="${f.id}" data-list="flights" data-type="text">${f.to||'—'}</td><td class="ed mono" data-ek="lnd" data-id="${f.id}" data-list="flights" data-type="text">${f.lnd||'—'}</td><td>${+f.total>0?badge(fmtHHMM(+f.total),'bgold'):`<span class="mono" style="color:var(--text2)">—</span>`}</td><td class="mono" style="color:var(--text2)">${f.engTot?fmtHHMM(+f.engTot):'—'}</td><td class="ed" data-ek="objective" data-id="${f.id}" data-list="flights" data-type="select_objective">${f.objective||'—'}</td><td class="ed ell" data-ek="remarks" data-id="${f.id}" data-list="flights" data-type="textarea" class="ell-wide">${f.remarks||'—'}</td><td><button class="btn sm danger" data-a="del-flight" data-id="${f.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="11" style="text-align:center;padding:18px;color:var(--text3)">No matching flights</td></tr>';
-    bindEditable();
-  })}
-
-  /* Remark tooltips */
-  document.querySelectorAll('[data-remark]').forEach(el=>{
-    el.addEventListener('mouseenter',e=>showRemark(e,el.dataset.remark));
-    el.addEventListener('mouseleave',hideRemark);
-  });
-
-  /* Inline edit cells */
-  bindEditable();
-
-  /* Modal buttons */
-  document.querySelectorAll('[data-a]').forEach(el=>{
+function bindActions(root){
+  (root||document).querySelectorAll('[data-a]').forEach(el=>{
     if(el._boundA)return;el._boundA=true;
     el.addEventListener('click',e=>{
     e.stopPropagation();
@@ -2621,7 +2586,7 @@ function bindAll(){
         if(confirm('Clear shipped status and date?')){r.shipped=false;r.dateShipped='';logAction(`RMA ${r.form||''} shipped cleared`,'rmas');sv(d);render();}
         return;
       }
-      const today=new Date().toISOString().slice(0,10);
+      const today=todayStr();
       S.rmaDate={id,field:'shipped'};render();return;
     }
     if(a==='rma-recv-box'){
@@ -2635,7 +2600,7 @@ function bindAll(){
     }
     if(a==='rma-date-save'){
       const r=d.rmas.find(x=>x.id===S.rmaDate.id);if(!r){S.rmaDate=null;render();return;}
-      const dt=(document.getElementById('rd-date')||{}).value||new Date().toISOString().slice(0,10);
+      const dt=(document.getElementById('rd-date')||{}).value||todayStr();
       if(S.rmaDate.field==='shipped'){r.dateShipped=dt;r.shipped=true;logAction(`RMA ${r.form||''} shipped ${fmtD(dt)}`,'rmas');}
       else{r.dateReceived=dt;r.arrived=true;logAction(`RMA ${r.form||''} received ${fmtD(dt)}`,'rmas');}
       S.rmaDate=null;sv(d);render();toast('Saved');return;
@@ -2650,7 +2615,7 @@ function bindAll(){
         }
         else{
           const newItem={id:nid(list),...fd};
-          if(t==='tif'){newItem.num=String(d.tifs.length+1);newItem.status='Open';if(!newItem.date)newItem.date=new Date().toISOString().slice(0,10);}
+          if(t==='tif'){newItem.num=String(d.tifs.length+1);newItem.status='Open';if(!newItem.date)newItem.date=todayStr();}
 
           list.push(newItem);
           logAction(`Added ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,newItem)}`,lk2);
@@ -2671,6 +2636,18 @@ function bindAll(){
       }
       sv(d);S.modal=null;S.edit=null;render();toast('Saved!');return;
     }
+    if(a==='edit-flight'){
+      if(!canAdmin()&&!(USER&&USER.role==='OPERATOR')){toast('🔒 Not allowed');return;}
+      const rec=d.flights.find(x=>x.id===id);
+      if(rec){S.modal='flight';S.edit={...rec};render();}
+      return;
+    }
+    if(a==='edit-fault'){
+      if(!canAdmin()&&!(USER&&USER.role==='OPERATOR')){toast('🔒 Not allowed');return;}
+      const rec=d.faults.find(x=>x.id===id);
+      if(rec){S.modal='fault';S.edit={...rec};render();}
+      return;
+    }
     if(AMAP[a]){S.modal=AMAP[a];S.edit={};render();return}
     if(DMAP[a]){
       const lk=DMAP[a],list=d[lk],idx=list.findIndex(r=>r.id===id);
@@ -2682,7 +2659,48 @@ function bindAll(){
       return;
     }
   });
-  });;
+  });
+}
+function bindAll(){
+  document.querySelectorAll('[data-tab]').forEach(el=>el.addEventListener('click',()=>{S.tab=el.dataset.tab;S.moreOpen=false;render()}));
+  document.querySelectorAll('.sb-ext,[data-ext]').forEach(el=>el.addEventListener('click',e=>{e.stopPropagation();openIMS();}));
+  const bnm=document.getElementById('bn-more');if(bnm)bnm.addEventListener('click',()=>{S.moreOpen=!S.moreOpen;render()});
+  const mbg=document.getElementById('more-bg');if(mbg)mbg.addEventListener('click',()=>{S.moreOpen=false;render()});
+  const be=document.getElementById('bxl'),bb=document.getElementById('bbk'),br=document.getElementById('brs'),ri=document.getElementById('ri');
+  if(be)be.addEventListener('click',exportExcel);
+  document.querySelectorAll('.blo').forEach(b=>b.addEventListener('click',()=>{if(confirm('Logout?'))logout();}));
+  const stR=document.getElementById('st-report');if(stR)stR.addEventListener('click',downloadWordReport);
+  const stB=document.getElementById('st-backup');if(stB)stB.addEventListener('click',backup);
+  const stE=document.getElementById('st-excel');if(stE)stE.addEventListener('click',exportExcel);
+  const stRs=document.getElementById('st-restore'),stRi=document.getElementById('st-ri');
+  if(stRs&&stRi){stRs.addEventListener('click',()=>stRi.click());stRi.addEventListener('change',e=>{if(e.target.files[0])restore(e.target.files[0])});}
+  if(bb)bb.addEventListener('click',backup);
+  if(br)br.addEventListener('click',()=>ri.click());
+  if(ri)ri.addEventListener('change',e=>{if(e.target.files[0])restore(e.target.files[0])});
+
+  /* Flight live search */
+  const fltSearch=document.getElementById('flt-search');
+  if(fltSearch){fltSearch.addEventListener('input',()=>{
+    flightFilter=fltSearch.value.toLowerCase();
+    const d=S.data,fl=d.flights;
+    const flSorted=[...fl].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.id-a.id);
+    const filtered=flightFilter?flSorted.filter(f=>(f.uav&&f.uav.toLowerCase().includes(flightFilter))||(f.base&&f.base.toLowerCase().includes(flightFilter))||(f.payload&&f.payload.toLowerCase().includes(flightFilter))||(f.objective&&f.objective.toLowerCase().includes(flightFilter))):flSorted;
+    const tbody=document.getElementById('flt-tbody');
+    if(tbody)tbody.innerHTML=filtered.map(f=>`<tr><td class="dim">${fmtD(f.date)}</td><td class="bld">${f.uav||'—'}</td><td class="dim">${f.base||'—'}</td><td class="dim">${f.payload||'—'}</td><td class="mono">${f.to||'—'}</td><td class="mono">${f.lnd||'—'}</td><td>${+f.total>0?badge(fmtHHMM(+f.total),'bgold'):`<span class="mono" style="color:var(--text2)">—</span>`}</td><td class="mono" style="color:var(--text2)">${f.engTot?fmtHHMM(+f.engTot):'—'}</td><td>${f.objective||'—'}</td><td class="ell-wide">${f.remarks||'—'}</td><td style="white-space:nowrap;text-align:center"><button class="btn sm" data-a="edit-flight" data-id="${f.id}" title="Edit flight">✎</button> <button class="btn sm danger" data-a="del-flight" data-id="${f.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="11" style="text-align:center;padding:18px;color:var(--text3)">No matching flights</td></tr>';
+    bindActions(tbody);
+  })}
+
+  /* Remark tooltips */
+  document.querySelectorAll('[data-remark]').forEach(el=>{
+    el.addEventListener('mouseenter',e=>showRemark(e,el.dataset.remark));
+    el.addEventListener('mouseleave',hideRemark);
+  });
+
+  /* Inline edit cells */
+  bindEditable();
+
+  /* Modal buttons */
+  bindActions(document);;
 }
 
 function bindEditable(){
