@@ -880,7 +880,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.08.04-14';
+const APP_BUILD='2026.08.04-15';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -1389,7 +1389,7 @@ function pgHome(){
     <th style="${thStyle}">Sphere Desic 12M</th>
     <th style="${thStyle}">Svc</th>
   </tr></thead><tbody>
-  ${sepTd(8,'Spectro (×6)')}
+  ${sepTd(8,'Spectro')}
   ${d.payloads.filter(p=>p.type==='Spectro').map(p=>{const pdc=(v,f)=>{const dd2=addInt(v,f);const dv2=du(dd2);return`<td class="dc ${v?cDate(dv2,f):'cn'}" style="font-size:11px;padding:3px 6px"><span class="cell-d">${v?fmtD(dd2):'—'}</span><span class="cell-s">${v&&dv2!==null?fdays(dv2):''}</span></td>`;};return`<tr>
     <td style="${rl}">${p.type}</td>
     ${dimTd(p.sn||'—')}
@@ -1398,7 +1398,7 @@ function pgHome(){
     ${pdc(p.purge6m,'6m')}${pdc(p.fork6m,'6m')}${pdc(p.sphere1y,'1y')}
     <td class="dc ${svcCl(p.svc)}" style="font-size:11px;padding:3px 6px"><span class="cell-d">${p.svc}</span></td>
   </tr>`;}).join('')}
-  ${sepTd(8,'T80 (×3)')}
+  ${sepTd(8,'T80')}
   ${d.payloads.filter(p=>p.type==='T80').map(p=>{return`<tr>
     <td style="${rl}">${p.type}</td>
     ${dimTd(p.sn||'—')}
@@ -2069,7 +2069,7 @@ function pgFlt(){
   <tbody id="flx-tbody">${faultRows||'<tr><td colspan="9" style="text-align:center;padding:18px;color:var(--text3)">No faults</td></tr>'}</tbody>
   </table></div></div>
 
-  <div class="ph" style="margin-top:20px"><div><div class="sdiv" style="margin:0">Limitation Log</div><div class="ph-sub" style="font-size:10px">Grouped by system. Press ✔ Performed to clear a limitation.</div></div><button class="btn primary" data-a="add-limit">+ New limitation</button></div>
+  <div class="ph" style="margin-top:20px"><div><div class="sdiv" style="margin:0">Limitation Log</div></div><button class="btn primary" data-a="add-limit">+ New limitation</button></div>
   <div class="search-bar">
     <input id="lim-search" type="text" placeholder="🔍 Search tail / condition / date...">
     <button class="btn sm" id="lim-clear">Clear</button>
@@ -2081,7 +2081,7 @@ function pgFlt(){
   <tbody id="lim-tbody">${limRows()||'<tr><td colspan="4" style="text-align:center;padding:18px;color:var(--text3)">No open limitations</td></tr>'}</tbody>
   </table></div></div>
 
-  <div class="ph" style="margin-top:20px"><div><div class="sdiv" style="margin:0">Acceptable Deferred Defects</div><div class="ph-sub" style="font-size:10px">Grouped by system. Warns 7 days before approval expires.</div></div><button class="btn primary" data-a="add-defect">+ New deferred defect</button></div>
+  <div class="ph" style="margin-top:20px"><div><div class="sdiv" style="margin:0">Acceptable Deferred Defects</div></div><button class="btn primary" data-a="add-defect">+ New deferred defect</button></div>
   <div class="search-bar">
     <input id="def-search" type="text" placeholder="🔍 Search tail / defect / note / date...">
     <select id="def-status" class="filt-sel"><option value="ALL">All statuses</option>${DEFECT_ST.map(s=>`<option value="${s}">${s}</option>`).join('')}</select>
