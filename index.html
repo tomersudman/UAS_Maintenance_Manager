@@ -549,7 +549,7 @@ const LBL_FIELD={uavs:'tail',engines:'num',gcs:'unit',gdt:'unit',satcoms:'name',
 const OP_BLOCKED_EK=['sn','num','item','unit','name','tail'];
 
 function unitLabel(lk,unit){const f=LBL_FIELD[lk];return (unit&&f&&unit[f])?unit[f]:('#'+(unit?unit.id:'?'));}
-const EK_LABELS={monthly:'Monthly inspection',q3:'3-Month inspection',q6:'6-Month inspection',qtr:'Quarterly inspection',annual:'Annual inspection',pitot3y:'Pitot/Fuel & Air Tube 3Y',cor5y:'Corrosion 5Y',ff200:'Fuel Filters 200H threshold',fpr8y:'Fuel Pressure Regulator 8Y',vt8y:'V-Tail 10Y',vt4k:'V-Tail 6000H threshold',mlgr:'R-MLG 10Y',mlgl:'L-MLG 10Y',bat3y:'UPS Battery 3Y',bat2y:'Battery 2Y',cbat5y:'Comp Battery 5Y',sixMonthly:'6-Month check',coolant2y:'Coolant 2Y',prop700:'Propeller 700H threshold',prop4y:'Propeller 4Y',rub5y:'Rubber Parts 5Y',pres:'Preservation 1Y',calib:'Annual calibration',oh25done:'25H OH (one-time)',oh50:'50H OH threshold',oh100:'100H OH threshold',oh200:'200H OH threshold',oh300:'300H OH threshold',oh900:'900H OH threshold',svc:'Serviceable',remarks:'Remarks',hrs:'Engine hours',fh:'Flight hours',loc:'Location',site:'Location',uav:'Assigned UAV',status:'Status',date:'Date',reply:'Reply date',shipped:'Shipped',invoice:'Invoice',arrived:'Arrived',t3y:'3Y Treatment',sn:'S/N',num:'Number',item:'Item name',engOH:'Engine OH @ assembly',itemOH:'Item OH',dateAcc:'Date accepted',snSent:'S/N sent',snRcvd:'S/N received',qtyRcvd:'Qty received',desc:'Description',note:'Note',tif:'TIF #',urgent:'Urgent'};
+const EK_LABELS={monthly:'Monthly inspection',q3:'3-Month inspection',q6:'6-Month inspection',qtr:'Quarterly inspection',annual:'Annual inspection',pitot3y:'Pitot/Fuel & Air Tube 3Y',cor5y:'Corrosion 5Y',ff200:'Fuel Filters 200H threshold',fpr8y:'Fuel Pressure Regulator 8Y',vt8y:'V-Tail 10Y',vt4k:'V-Tail 6000H threshold',mlgr:'R-MLG 10Y',mlgl:'L-MLG 10Y',bat3y:'UPS Battery 3Y',bat2y:'Battery 2Y',cbat5y:'Comp Battery 5Y',sixMonthly:'6-Month check',coolant2y:'Coolant 2Y',prop700:'Propeller 700H threshold',prop4y:'Propeller 4Y',rub5y:'Rubber Parts 5Y',pres:'Preservation 1Y',calib:'Annual calibration',oh25done:'25H OH (one-time)',oh50:'50H OH threshold',oh100:'100H OH threshold',oh200:'200H OH threshold',oh300:'300H OH threshold',oh900:'900H OH threshold',svc:'Serviceable',remarks:'Remarks',hrs:'Engine hours',fh:'Flight hours',loc:'Location',site:'Location',uav:'Assigned UAV',status:'Status',date:'Date',reply:'Reply date',shipped:'Shipped',invoice:'Invoice',arrived:'Arrived',t3y:'3Y Treatment',purge6m:'Purging 6M',fork6m:'Fork Desiccant 6M',sphere1y:'Sphere Desiccant 12M',sn:'S/N',num:'Number',item:'Item name',engOH:'Engine OH @ assembly',itemOH:'Item OH',dateAcc:'Date accepted',snSent:'S/N sent',snRcvd:'S/N received',qtyRcvd:'Qty received',desc:'Description',note:'Note',tif:'TIF #',urgent:'Urgent'};
 function prettyVal(v){
   if(v===true)return'YES';
   if(v===false)return'NO';
@@ -880,7 +880,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.08.04-12';
+const APP_BUILD='2026.08.04-14';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -1047,7 +1047,7 @@ function openPopup(el,uid,lk,ek,type){
     fh:'Total FH (HH:MM)',hrs:'Engine Hours (HH:MM)',eng:'Engine #',
     oh50:'Next 50H',oh100:'Next 100H',oh200:'Next 200H',oh300:'Next 300H',oh900:'Next 900H',prop700:'Prop Next',
     rub5y:'Rubber 5Y Last',pres:'Preservation Last',prop4y:'Propeller 4Y Last',coolant2y:'Coolant 2Y Last',exp:'Expiry Last',
-    calib:'Calib Last Done',insp:'Insp Last Done',t3y:'3Y Treatment Last',inst:'Install Date',
+    calib:'Calib Last Done',insp:'Insp Last Done',t3y:'3Y Treatment Last',purge6m:'Last Purging Done',fork6m:'Last Fork Desiccant Done',sphere1y:'Last Sphere Desiccant Done',inst:'Install Date',
     toOH:'Next OH Threshold (h)',remarks:'Remark',status:'Status',num:'Number',
     bat2y:'Battery 2Y Last',annual:'Annual Last',sixMonthly:'6-Month Last',
     dateAcc:'Date Accomplish',uav:'UAV',sn:'Serial Number',loc:'Location',site:'Site',svc:'Serviceable'
@@ -1181,8 +1181,8 @@ function defD(){
       {id:3,sn:'146',loc:'Songkhla',svc:'YES',remarks:''},
     ],
     payloads:[
-      ...Array(6).fill(0).map((_,i)=>({id:i+1,type:'Spectro',sn:'',uav:'',loc:'U-Tapao',t3y:'',svc:'YES',remarks:''})),
-      ...Array(3).fill(0).map((_,i)=>({id:7+i,type:'T80',sn:'',uav:'',loc:'U-Tapao',t3y:'',svc:'YES',remarks:''})),
+      ...Array(6).fill(0).map((_,i)=>({id:i+1,type:'Spectro',sn:'',uav:'',loc:'U-Tapao',purge6m:'',fork6m:'',sphere1y:'',svc:'YES',remarks:''})),
+      ...Array(3).fill(0).map((_,i)=>({id:7+i,type:'T80',sn:'',uav:'',loc:'U-Tapao',svc:'YES',remarks:''})),
     ],
     tifs:[],sbs:[],rmas:[
       {id:1,date:'2021-10-13',status:'Closed',num:'',loc:'U-Tapao',site:'U-Tapao',tail:'1440',shipped:true,invoice:true,arrived:true,form:'140',item:'ACTUATOR ASSY',pn:'501-17-00140-XX',snSent:'11803',snRcvd:'121805',note:'Airbrake Middle Exist'},
@@ -1384,25 +1384,27 @@ function pgHome(){
     <th style="${thStyle}">S/N</th>
     <th style="${thStyle}">UAV</th>
     <th style="${thStyle}">Location</th>
-    <th style="${thStyle}">3Y Treatment</th>
+    <th style="${thStyle}">Purge 6M</th>
+    <th style="${thStyle}">Fork Desic 6M</th>
+    <th style="${thStyle}">Sphere Desic 12M</th>
     <th style="${thStyle}">Svc</th>
   </tr></thead><tbody>
-  ${sepTd(6,'Spectro (×6)')}
-  ${d.payloads.filter(p=>p.type==='Spectro').map(p=>{const due=addInt(p.t3y,'3y');const dv=du(due);const cl=cDate(dv,'3y');return`<tr>
+  ${sepTd(8,'Spectro (×6)')}
+  ${d.payloads.filter(p=>p.type==='Spectro').map(p=>{const pdc=(v,f)=>{const dd2=addInt(v,f);const dv2=du(dd2);return`<td class="dc ${v?cDate(dv2,f):'cn'}" style="font-size:11px;padding:3px 6px"><span class="cell-d">${v?fmtD(dd2):'—'}</span><span class="cell-s">${v&&dv2!==null?fdays(dv2):''}</span></td>`;};return`<tr>
     <td style="${rl}">${p.type}</td>
     ${dimTd(p.sn||'—')}
     ${dimTd(p.uav||'—')}
     ${dimTd(p.loc||'—')}
-    <td class="dc ${p.t3y?cl:'cn'}" style="font-size:11px;padding:3px 6px"><span class="cell-d">${p.t3y?fmtD(due):'—'}</span><span class="cell-s">${p.t3y&&dv!==null?fdays(dv):''}</span></td>
+    ${pdc(p.purge6m,'6m')}${pdc(p.fork6m,'6m')}${pdc(p.sphere1y,'1y')}
     <td class="dc ${svcCl(p.svc)}" style="font-size:11px;padding:3px 6px"><span class="cell-d">${p.svc}</span></td>
   </tr>`;}).join('')}
-  ${sepTd(6,'T80 (×3)')}
-  ${d.payloads.filter(p=>p.type==='T80').map(p=>{const due=addInt(p.t3y,'3y');const dv=du(due);const cl=cDate(dv,'3y');return`<tr>
+  ${sepTd(8,'T80 (×3)')}
+  ${d.payloads.filter(p=>p.type==='T80').map(p=>{return`<tr>
     <td style="${rl}">${p.type}</td>
     ${dimTd(p.sn||'—')}
     ${dimTd(p.uav||'—')}
     ${dimTd(p.loc||'—')}
-    <td class="dc ${p.t3y?cl:'cn'}" style="font-size:11px;padding:3px 6px"><span class="cell-d">${p.t3y?fmtD(due):'—'}</span><span class="cell-s">${p.t3y&&dv!==null?fdays(dv):''}</span></td>
+    <td class="dc cn" style="font-size:11px;padding:3px 6px"><span class="cell-d">—</span></td><td class="dc cn" style="font-size:11px;padding:3px 6px"><span class="cell-d">—</span></td><td class="dc cn" style="font-size:11px;padding:3px 6px"><span class="cell-d">—</span></td>
     <td class="dc ${svcCl(p.svc)}" style="font-size:11px;padding:3px 6px"><span class="cell-d">${p.svc}</span></td>
   </tr>`;}).join('')}
   </tbody></table></div>`;
@@ -1823,13 +1825,15 @@ function pgPay(){
   const d=S.data;
   return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">Payloads</div><div class="ph-sub">Click any cell to edit</div></div></div>
   <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
-  <thead><tr><th>Type</th><th>S/N</th><th>UAV</th><th>Location</th><th>3Y Treatment (last done → due)</th><th>Svc</th><th>Remarks</th></tr></thead>
+  <thead><tr><th>Type</th><th>S/N</th><th>UAV</th><th>Location</th><th>Purging 6M</th><th>Fork Desiccant 6M</th><th>Sphere Desiccant 12M</th><th>Svc</th><th>Remarks</th></tr></thead>
   <tbody>${d.payloads.map(p=>`<tr>
     <td class="ed bld" style="color:var(--gold)" data-ek="type" data-id="${p.id}" data-list="payloads" data-type="text">${p.type}</td>
     <td class="ed mono" data-ek="sn" data-id="${p.id}" data-list="payloads" data-type="text">${p.sn||'—'}</td>
     <td class="ed" data-ek="uav" data-id="${p.id}" data-list="payloads" data-type="select_uav">${p.uav||'—'}</td>
     <td class="ed dim" data-ek="loc" data-id="${p.id}" data-list="payloads" data-type="select_pay_loc">${p.loc||'—'}</td>
-    <td class="ed" data-ek="t3y" data-id="${p.id}" data-list="payloads" data-type="date" style="width:1px">${dateBadge(p.t3y,'3y','t3y',p.id,'payloads')}</td>
+    ${p.type==='Spectro'?`<td class="ed" data-ek="purge6m" data-id="${p.id}" data-list="payloads" data-type="date" style="width:1px">${dateBadge(p.purge6m,'6m','purge6m',p.id,'payloads')}</td>
+    <td class="ed" data-ek="fork6m" data-id="${p.id}" data-list="payloads" data-type="date" style="width:1px">${dateBadge(p.fork6m,'6m','fork6m',p.id,'payloads')}</td>
+    <td class="ed" data-ek="sphere1y" data-id="${p.id}" data-list="payloads" data-type="date" style="width:1px">${dateBadge(p.sphere1y,'1y','sphere1y',p.id,'payloads')}</td>`:`<td class="dc cn">—</td><td class="dc cn">—</td><td class="dc cn">—</td>`}
     <td class="ed" data-ek="svc" data-id="${p.id}" data-list="payloads" data-type="select_svc">${svcBadge(p.svc)}</td>
     <td class="ed ell" data-ek="remarks" data-id="${p.id}" data-list="payloads" data-type="textarea" class="ell-wide">${p.remarks||'—'}</td>
   </tr>`).join('')}
@@ -2387,7 +2391,7 @@ function exportExcel(){
   sh('GDT',['Unit','Site','Svc','Monthly','Qtr','Annual','Bat2Y','Remarks'],d.gdt.map(r=>[r.unit,r.site,r.svc,r.monthly,r.qtr,r.annual,r.bat2y,r.remarks]));
   sh('Engines',['Num','UAV','Loc','Hrs','Svc','OH50','OH100','OH200','OH300','OH900','Prop','Rub5Y','Pres','Exp','Coolant2Y','Remarks'],d.engines.map(e=>[e.num,e.uav,e.loc,fmtHHMM(+e.hrs),e.svc,fmtHHMM(+e.oh50),fmtHHMM(+e.oh100),fmtHHMM(+e.oh200),fmtHHMM(+e.oh300),fmtHHMM(+e.oh900),fmtHHMM(+e.prop700),e.rub5y,e.pres,e.exp,e.coolant2y,e.remarks]));
   sh('EgParts',['Type','SN','UAV','Loc','Svc','ItemOH','EngOH','NextOH','DateAcc','Remarks'],d.eparts.map(p=>[p.type,p.sn,p.uav,p.loc,p.svc,fmtHHMM(+p.itemOH),fmtHHMM(+p.engOH),fmtHHMM(+p.toOH),p.dateAcc,p.remarks]));
-  sh('Payloads',['Type','SN','UAV','Loc','T3Y','Svc','Remarks'],d.payloads.map(p=>[p.type,p.sn,p.uav,p.loc,p.t3y,p.svc,p.remarks]));
+  sh('Payloads',['Type','SN','UAV','Loc','Purge6M','ForkDesic6M','SphereDesic12M','Svc','Remarks'],d.payloads.map(p=>[p.type,p.sn,p.uav,p.loc,p.purge6m,p.fork6m,p.sphere1y,p.svc,p.remarks]));
   sh('TIF',['#','Desc','Cat','Date','Reply','Status','Remarks'],d.tifs.map(t=>[t.num,t.desc,t.cat,t.date,t.reply,t.status,t.remarks]));
   sh('SB',['#','Date','Sys','Desc','Status','Remarks'],d.sbs.map(s=>[s.num,s.date,s.sys,s.desc,s.status,s.remarks]));
   sh('RMA',['Date','Status','Form','Loc','Tail','Item','PN','SNSent','SNRcvd','Ship','Inv','Rcvd','Note'],d.rmas.map(r=>[r.date,r.status,r.form,r.loc,r.tail,r.item,r.pn,r.snSent,r.snRcvd,r.shipped,r.invoice,r.arrived,r.note]));
