@@ -527,7 +527,7 @@ let SRV_VERSION=0;        // last known server version
 let SYNC_STATE='off';     // off|ok|saving|error
 let pushTimer=null;
 const CLOUD_ON=()=>API_URL&&!API_URL.startsWith('PASTE');
-const NEED_SCRIPT_V=4;
+const NEED_SCRIPT_V=5;
 const IMS_URL='https://tomersudman.github.io/osprey-ims/';
 const ROLE_PW={ADMIN:'1234',OPERATOR:'8888',VIEWER:'0000'};  // shared PINs for cross-app SSO
 function checkScriptVersion(resp){
@@ -544,12 +544,12 @@ function checkScriptVersion(resp){
   }else if(b)b.remove();
 }
 
-const LIST_NAMES={uavs:'UAV',engines:'Engine',gcs:'GCS',gdt:'GDT',satcoms:'Satcom',payloads:'Payload',eparts:'Engine Part',flt:'FLT',gse_gens:'Generator',opats:'OPATS',gse_tools:'Tool',tifs:'TIF',sbs:'SB',rmas:'RMA',rrqs:'RRQ',flights:'Flight',faults:'Fault',limits:'Limitation',defects:'Deferred Defect'};
-const LBL_FIELD={uavs:'tail',engines:'num',gcs:'unit',gdt:'unit',satcoms:'name',payloads:'sn',eparts:'sn',flt:'item',gse_gens:'item',opats:'sn',gse_tools:'item',tifs:'num',sbs:'num',rmas:'form',rrqs:'form',flights:'date',faults:'date',limits:'tail',defects:'tail'};
+const LIST_NAMES={uavs:'UAV',engines:'Engine',gcs:'GCS',gdt:'GDT',satcoms:'Satcom',payloads:'Payload',eparts:'Engine Part',flt:'FLT',gse_gens:'Generator',opats:'OPATS',gse_tools:'Tool',tifs:'TIF',sbs:'SB',rmas:'RMA',rrqs:'RRQ',flights:'Flight',faults:'Fault',limits:'Limitation',defects:'Deferred Defect',batteries:'Battery'};
+const LBL_FIELD={uavs:'tail',engines:'num',gcs:'unit',gdt:'unit',satcoms:'name',payloads:'sn',eparts:'sn',flt:'item',gse_gens:'item',opats:'sn',gse_tools:'item',tifs:'num',sbs:'num',rmas:'form',rrqs:'form',flights:'date',faults:'date',limits:'tail',defects:'tail',batteries:'sn'};
 const OP_BLOCKED_EK=['sn','num','item','unit','name','tail'];
 
 function unitLabel(lk,unit){const f=LBL_FIELD[lk];return (unit&&f&&unit[f])?unit[f]:('#'+(unit?unit.id:'?'));}
-const EK_LABELS={monthly:'Monthly inspection',q3:'3-Month inspection',q6:'6-Month inspection',qtr:'Quarterly inspection',annual:'Annual inspection',pitot3y:'Pitot/Fuel & Air Tube 3Y',cor5y:'Corrosion 5Y',ff200:'Fuel Filters 200H threshold',fpr8y:'Fuel Pressure Regulator 8Y',vt8y:'V-Tail 10Y',vt4k:'V-Tail 6000H threshold',mlgr:'R-MLG 10Y',mlgl:'L-MLG 10Y',bat3y:'UPS Battery 3Y',bat2y:'Battery 2Y',cbat5y:'Comp Battery 5Y',sixMonthly:'6-Month check',coolant2y:'Coolant 2Y',prop700:'Propeller 700H threshold',prop4y:'Propeller 4Y',rub5y:'Rubber Parts 5Y',pres:'Preservation 1Y',calib:'Annual calibration',oh25done:'25H OH (one-time)',oh50:'50H OH threshold',oh100:'100H OH threshold',oh200:'200H OH threshold',oh300:'300H OH threshold',oh900:'900H OH threshold',svc:'Serviceable',remarks:'Remarks',hrs:'Engine hours',fh:'Flight hours',loc:'Location',site:'Location',uav:'Assigned UAV',status:'Status',date:'Date',reply:'Reply date',shipped:'Shipped',invoice:'Invoice',arrived:'Arrived',t3y:'3Y Treatment',purge6m:'Purging 6M',fork6m:'Fork Desiccant 6M',sphere1y:'Sphere Desiccant 12M',sn:'S/N',num:'Number',item:'Item name',engOH:'Engine OH @ assembly',itemOH:'Item OH',dateAcc:'Date accepted',snSent:'S/N sent',snRcvd:'S/N received',qtyRcvd:'Qty received',desc:'Description',note:'Note',tif:'TIF #',urgent:'Urgent'};
+const EK_LABELS={monthly:'Monthly inspection',q3:'3-Month inspection',q6:'6-Month inspection',qtr:'Quarterly inspection',annual:'Annual inspection',pitot3y:'Pitot/Fuel & Air Tube 3Y',cor5y:'Corrosion 5Y',ff200:'Fuel Filters 200H threshold',fpr8y:'Fuel Pressure Regulator 8Y',vt8y:'V-Tail 10Y',vt4k:'V-Tail 6000H threshold',mlgr:'R-MLG 10Y',mlgl:'L-MLG 10Y',bat3y:'UPS Battery 3Y',bat2y:'Battery 2Y',cbat5y:'Comp Battery 5Y',sixMonthly:'6-Month check',coolant2y:'Coolant 2Y',prop700:'Propeller 700H threshold',prop4y:'Propeller 4Y',rub5y:'Rubber Parts 5Y',pres:'Preservation 1Y',calib:'Annual calibration',oh25done:'25H OH (one-time)',oh50:'50H OH threshold',oh100:'100H OH threshold',oh200:'200H OH threshold',oh300:'300H OH threshold',oh900:'900H OH threshold',svc:'Serviceable',remarks:'Remarks',hrs:'Engine hours',fh:'Flight hours',loc:'Location',site:'Location',uav:'Assigned UAV',status:'Status',date:'Date',reply:'Reply date',shipped:'Shipped',invoice:'Invoice',arrived:'Arrived',t3y:'3Y Treatment',purge6m:'Purging 6M',charge1m:'Charging 1M',learn6m:'Learning 6M',fork6m:'Fork Desiccant 6M',sphere1y:'Sphere Desiccant 12M',sn:'S/N',num:'Number',item:'Item name',engOH:'Engine OH @ assembly',itemOH:'Item OH',dateAcc:'Date accepted',snSent:'S/N sent',snRcvd:'S/N received',qtyRcvd:'Qty received',desc:'Description',note:'Note',tif:'TIF #',urgent:'Urgent'};
 function prettyVal(v){
   if(v===true)return'YES';
   if(v===false)return'NO';
@@ -634,7 +634,7 @@ function canEdit(ek,lk){
   if(!CLOUD_ON())return true;
   if(!USER)return false;
   if(USER.role==='VIEWER')return false;
-  if(USER.role==='OPERATOR'&&lk==='eparts')return true;
+  if(USER.role==='OPERATOR'&&['eparts','flights','faults','limits','defects','batteries'].includes(lk))return true;
   if(USER.role==='OPERATOR'&&OP_BLOCKED_EK.includes(ek))return false;
   return true;
 }
@@ -880,7 +880,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.08.04-15';
+const APP_BUILD='2026.08.07-02';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -1047,7 +1047,7 @@ function openPopup(el,uid,lk,ek,type){
     fh:'Total FH (HH:MM)',hrs:'Engine Hours (HH:MM)',eng:'Engine #',
     oh50:'Next 50H',oh100:'Next 100H',oh200:'Next 200H',oh300:'Next 300H',oh900:'Next 900H',prop700:'Prop Next',
     rub5y:'Rubber 5Y Last',pres:'Preservation Last',prop4y:'Propeller 4Y Last',coolant2y:'Coolant 2Y Last',exp:'Expiry Last',
-    calib:'Calib Last Done',insp:'Insp Last Done',t3y:'3Y Treatment Last',purge6m:'Last Purging Done',fork6m:'Last Fork Desiccant Done',sphere1y:'Last Sphere Desiccant Done',inst:'Install Date',
+    calib:'Calib Last Done',insp:'Insp Last Done',t3y:'3Y Treatment Last',purge6m:'Last Purging Done',charge1m:'Last Charging Done',learn6m:'Last Learning Done',fork6m:'Last Fork Desiccant Done',sphere1y:'Last Sphere Desiccant Done',inst:'Install Date',
     toOH:'Next OH Threshold (h)',remarks:'Remark',status:'Status',num:'Number',
     bat2y:'Battery 2Y Last',annual:'Annual Last',sixMonthly:'6-Month Last',
     dateAcc:'Date Accomplish',uav:'UAV',sn:'Serial Number',loc:'Location',site:'Site',svc:'Serviceable'
@@ -1200,12 +1200,13 @@ function defD(){
     ],
     flights:[],faults:[],
     limits:[],
-    defects:[]
+    defects:[],
+    batteries:Array(21).fill(0).map((_,i)=>({id:i+1,sn:'',uav:'',charge1m:'',learn6m:''}))
   }
 }
 
 function normRRQ(d){
-  if(d){if(!Array.isArray(d.limits))d.limits=[];if(!Array.isArray(d.defects))d.defects=[];}
+  if(d){if(!Array.isArray(d.limits))d.limits=[];if(!Array.isArray(d.defects))d.defects=[];if(!Array.isArray(d.batteries))d.batteries=Array(21).fill(0).map((_,i)=>({id:i+1,sn:'',uav:'',charge1m:'',learn6m:''}));}
   if(d&&Array.isArray(d.rrqs))d.rrqs.forEach(r=>{
     const s=String(r.status||'').toUpperCase();
     if(s==='CLOSED')r.status='ARRIVED';
@@ -1625,7 +1626,20 @@ function pgUAV(){
   });
   tbl+=`</tbody></table></div>`;
   return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">900 UAV</div><div class="ph-sub">Click any cell to edit • HH:MM format for hours • dates = last done → auto-calculates due</div></div></div>
-  <div class="ov-grid">${tbl}</div></div></div>`;
+  <div class="ov-grid">${tbl}</div>
+
+  <div class="ph" style="margin-top:20px"><div><div class="sdiv" style="margin:0">Batteries</div></div>${canAdmin()||(USER&&USER.role==='OPERATOR')?'<button class="btn primary" data-a="add-battery">+ Add battery</button>':''}</div>
+  <div class="search-bar">
+    <input id="bat-search" type="text" placeholder="🔍 Search S/N or UAV...">
+    <button class="btn sm" id="bat-clear">Clear</button>
+    <span id="bat-count" style="font-size:10px;color:var(--text3)"></span>
+  </div>
+  <div class="tbl-wrap"><div class="tbl-scroll" style="max-height:520px">
+  <table class="dt-c">
+  <thead><tr><th style="min-width:120px">Battery S/N</th><th style="min-width:90px">UAV installed</th><th style="min-width:110px">Charging 1M</th><th style="min-width:110px">Learning 6M</th>${canAdmin()||(USER&&USER.role==='OPERATOR')?'<th style="width:1px"></th>':''}</tr></thead>
+  <tbody id="bat-tbody">${batteryRows()||`<tr><td colspan="5" style="text-align:center;padding:18px;color:var(--text3)">No batteries</td></tr>`}</tbody>
+  </table></div></div>
+  </div></div>`;
 }
 function pgGCS(){
   const d=S.data;
@@ -2105,6 +2119,20 @@ function sortFlights(key){
 function tailAlerts(tailKey){
   const d=S.data,out=[];
   (d.limits||[]).forEach(l=>{if(l.tail===tailKey)out.push({k:'LIM',txt:'LIMITATION: '+(l.cond||'—')+(l.date?' ('+fmtD(l.date)+')':''),urg:2});});
+  if(String(tailKey).startsWith('UAV ')){
+    const t=String(tailKey).slice(4);
+    (d.batteries||[]).forEach(b=>{
+      if(String(b.uav||'')!==t)return;
+      const nm=b.sn?('S/N '+b.sn):('battery #'+b.id);
+      [['charge1m','monthly','Charging'],['learn6m','6m','Learning']].forEach(([k,f,lbl])=>{
+        if(!b[k])return;
+        const dd=du(addInt(b[k],f));
+        if(dd===null)return;
+        if(dd<0)out.push({k:'BAT',txt:'BATTERY '+nm+': '+lbl+' OVERDUE by '+Math.abs(dd)+'d',urg:3});
+        else if(dd<=7)out.push({k:'BAT',txt:'BATTERY '+nm+': '+lbl+' due in '+dd+'d',urg:2});
+      });
+    });
+  }
   (d.defects||[]).forEach(x=>{
     if(x.tail!==tailKey)return;
     if(x.status==='Open'){out.push({k:'DEF',txt:'DEFERRED DEFECT (Open): '+(x.defect||'—'),urg:2});return;}
@@ -2128,7 +2156,7 @@ function tailWarn(tailKey){
 }
 function renderTailAlerts(){
   const key=S.tailAlert;const a=tailAlerts(key);
-  const ic=x=>x.k==='EXP'?'⏰':x.k==='LIM'?'⚠️':'🔧';
+  const ic=x=>x.k==='EXP'?'⏰':x.k==='LIM'?'⚠️':x.k==='BAT'?'🔋':'🔧';
   const col=x=>x.urg>=3?'var(--red)':'var(--yellow)';
   return`<div class="ov-bg"><div class="modal" style="max-width:460px">
     <div class="m-title"><span>❗ ${key}</span><button class="btn sm" data-a="close-tail-alerts" style="font-size:13px;padding:2px 6px">✕</button></div>
@@ -2173,6 +2201,16 @@ function defRows(){
   </tr>`;}).join('');
 }
 
+function batteryRows(){
+  const d=S.data,ed=canAdmin()||(USER&&USER.role==='OPERATOR');
+  return (d.batteries||[]).map(b=>`<tr data-search="${[b.sn,b.uav].filter(Boolean).join(' ').toLowerCase().replace(/"/g,'&quot;')}">
+    <td class="ed mono bld" data-ek="sn" data-id="${b.id}" data-list="batteries" data-type="text">${b.sn||'—'}</td>
+    <td class="ed" data-ek="uav" data-id="${b.id}" data-list="batteries" data-type="select_uav">${b.uav||'—'}</td>
+    <td class="ed" data-ek="charge1m" data-id="${b.id}" data-list="batteries" data-type="date" style="width:1px">${dateBadge(b.charge1m,'monthly','charge1m',b.id,'batteries')}</td>
+    <td class="ed" data-ek="learn6m" data-id="${b.id}" data-list="batteries" data-type="date" style="width:1px">${dateBadge(b.learn6m,'6m','learn6m',b.id,'batteries')}</td>
+    ${ed?`<td style="text-align:center"><button class="btn sm danger" data-a="del-battery" data-id="${b.id}" title="Remove battery">✕</button></td>`:''}
+  </tr>`).join('');
+}
 /* ═══ MODAL ═══ */
 const RRQB_COLS=[{f:'item',l:'Item',w:200},{f:'pn',l:'Part #',w:130},{f:'sys',l:'System',w:120},{f:'qty',l:'Qty',w:60},{f:'note',l:'Note',w:200}];
 function rrqBulkRowHTML(i){
@@ -2799,7 +2837,7 @@ function page(){
 
 const LMAP={flight:'flights',fault:'faults',tif:'tifs',sb:'sbs',rma:'rmas',rrq:'rrqs',engine:'engines',limit:'limits',defect:'defects'};
 const AMAP={'add-tif':'tif','add-sb':'sb','add-rma':'rma','add-rrq':'rrq','add-flight':'flight','add-fault':'fault','add-engine':'engine','add-limit':'limit','add-defect':'defect'};
-const DMAP={'del-tif':'tifs','del-sb':'sbs','del-rma':'rmas','del-rrq':'rrqs','del-flight':'flights','del-fault':'faults','del-epart':'eparts','del-engine':'engines','del-gse-tool':'gse_tools','del-limit':'limits','del-defect':'defects'};
+const DMAP={'del-tif':'tifs','del-sb':'sbs','del-rma':'rmas','del-rrq':'rrqs','del-flight':'flights','del-fault':'faults','del-epart':'eparts','del-engine':'engines','del-gse-tool':'gse_tools','del-limit':'limits','del-defect':'defects','del-battery':'batteries'};
 
 function gfd(){
   const fm=document.getElementById('mf');if(!fm)return{};
@@ -2853,7 +2891,10 @@ function bindActions(root){
     if(a==='toggle-theme'){THEME=THEME==='light'?'dark':'light';localStorage.setItem('uas_theme',THEME);applyTheme();render();return}
     if((a.startsWith('add-')||a.startsWith('del-')||a==='save')&&!canAdmin()){
       const isOp=USER&&USER.role==='OPERATOR';
-      const opOk=isOp&&(a==='add-flight'||a==='add-fault'||a==='add-epart-row'||(a==='save'&&(el.dataset.t==='flight'||el.dataset.t==='fault')));
+      const OP_ADD=['add-flight','add-fault','add-epart-row','add-limit','add-defect','add-battery'];
+      const OP_DEL=['del-flight','del-fault','del-epart','del-limit','del-defect','del-battery'];
+      const OP_SAVE=['flight','fault','limit','defect'];
+      const opOk=isOp&&(OP_ADD.includes(a)||OP_DEL.includes(a)||(a==='save'&&OP_SAVE.includes(el.dataset.t)));
       if(!opOk){toast('🔒 Admin only');return;}
     }
     if(a==='add-epart-row'){
@@ -2967,6 +3008,14 @@ function bindActions(root){
       toast(added+' RRQ row'+(added>1?'s':'')+' added');
       return;
     }
+    if(a==='add-battery'){
+      if(!canAdmin()&&!(USER&&USER.role==='OPERATOR')){toast('🔒 Not allowed');return;}
+      if(!Array.isArray(d.batteries))d.batteries=[];
+      const maxId=d.batteries.reduce((m,b)=>Math.max(m,+b.id||0),0);
+      d.batteries.push({id:maxId+1,sn:'',uav:'',charge1m:'',learn6m:''});
+      logAction('Added battery row','batteries');
+      sv(d);render();toast('Battery added — click cells to fill in');return;
+    }
     if(a==='tail-alerts'){S.tailAlert=el.dataset.tail||'';render();return;}
     if(a==='close-tail-alerts'){S.tailAlert=null;render();return;}
     if(a==='edit-limit'||a==='edit-defect'){
@@ -3050,7 +3099,8 @@ function bindAll(){
   bindTableFilter('rma');
   bindTableFilter('lim');
   bindTableFilter('def');
-  bindTableFilter('flx');;
+  bindTableFilter('flx');
+  bindTableFilter('bat');;
 }
 
 function bindEditable(){
