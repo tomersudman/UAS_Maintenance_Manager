@@ -791,7 +791,7 @@ const EPART_LOCS=['U-Tapao','U-Tapao Storage','Songkhla','Songkhla Storage','Isr
 const CATS=['UAV','GCS','GDT','ENGINE','GSE','PAYLOAD','FLIGHT'];
 const TIF_ST=['Open','Closed','Answered','AI','Awaiting Parts'];
 const RMA_ST=['Open','Closed','Invoice sent','Awaiting RMA','Awaiting Invoice','Israel','To ISR','CANCELED'];
-const RRQ_ST=['REQUESTED','ARRIVED','CANCELLED'];
+const RRQ_ST=['REQUESTED','PARTIALLY','ARRIVED','CANCELLED'];
 const BASES=[...UAV_SITES,'Other'];
 const PAYLOAD_OPTS=['','T80','Rafts','None'];
 const OBJ_OPTS=['Achieved','Not Achieved','Partial','Training','Transit','Patrol','ISR'];
@@ -880,7 +880,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.08.07-02';
+const APP_BUILD='2026.08.16-01';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -1963,7 +1963,7 @@ function pgRRQ(){
   <thead><tr><th>Date</th><th>Status</th><th>Arrival</th><th>Form#</th><th>Urgent</th><th>Site</th><th>System</th><th>Item</th><th>Part #</th><th>Qty Req.</th><th>Qty Rcvd</th><th>S/N Rcvd</th><th>Note</th><th></th></tr></thead>
   <tbody id="rrq-tbody">${rows.map(r=>`<tr data-status="${r.status||''}" data-search="${[r.form,r.site,r.system,r.item,r.pn,r.note,r.snRcvd,fmtD(r.date)].filter(Boolean).join(' ').toLowerCase().replace(/"/g,'&quot;')}">
     <td class="ed dim" data-ek="date" data-id="${r.id}" data-list="rrqs" data-type="date">${fmtD(r.date)}</td>
-    <td class="ed" data-ek="status" data-id="${r.id}" data-list="rrqs" data-type="select_rrq_st">${badge(r.status,r.status==='ARRIVED'?'bg':r.status==='CANCELLED'?'bgold':'br')}</td>
+    <td class="ed" data-ek="status" data-id="${r.id}" data-list="rrqs" data-type="select_rrq_st">${badge(r.status,r.status==='ARRIVED'?'bg':r.status==='CANCELLED'?'bgold':r.status==='PARTIALLY'?'by':'br')}</td>
     <td class="ed dim" data-ek="arrival" data-id="${r.id}" data-list="rrqs" data-type="date">${fmtD(r.arrival)}</td>
     <td class="ed mono" data-ek="form" data-id="${r.id}" data-list="rrqs" data-type="text">${r.form||'—'}</td>
     <td class="ed" data-ek="urgent" data-id="${r.id}" data-list="rrqs" data-type="select_svc_bool">${r.urgent?badge('URGENT','br'):badge('No','bgr')}</td>
@@ -2722,11 +2722,11 @@ function downloadWordReport(){
 
   // ── Open RMAs (all) ──
   const rmaOpen=d.rmas.filter(r=>!r.arrived);
-  const rmaRows=rmaOpen.length?rmaOpen.map(r=>`<tr><td>${esc(fmtD(r.date))}</td><td>${esc(r.form||'—')}</td><td>${esc(r.tail||'—')}</td><td>${esc(r.item||'')}</td><td>${esc(r.pn||'')}</td><td>${esc(r.status||'Open')}</td><td>${r.shipped?'Yes':'No'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:#888">No open RMAs</td></tr>';
+  const rmaRows=rmaOpen.length?rmaOpen.map(r=>`<tr><td>${esc(fmtD(r.date))}</td><td>${esc(r.form||'—')}</td><td>${esc(r.tail||'—')}</td><td>${esc(r.item||'')}</td><td>${esc(r.pn||'')}</td><td>${esc(r.note||'')}</td><td>${r.shipped?(r.dateShipped?esc(fmtD(r.dateShipped)):'Yes'):'No'}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:#888">No open RMAs</td></tr>';
 
   // ── Open RRQs (all) ──
-  const rrqOpen=d.rrqs.filter(r=>r.status!=='Received'&&r.status!=='Closed'&&!r.arrived);
-  const rrqRows=rrqOpen.length?rrqOpen.map(r=>`<tr><td>${esc(fmtD(r.date))}</td><td>${esc(r.form||'—')}</td><td>${esc(r.site||'—')}</td><td>${esc(r.item||'')}</td><td>${esc(r.pn||'')}</td><td>${esc(r.qty||'')}</td><td>${r.urgent?'<b style="color:#c62828">URGENT</b>':(r.status||'Open')}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:#888">No open RRQs</td></tr>';
+  const rrqOpen=d.rrqs.filter(r=>{const s=String(r.status||'').toUpperCase();return s!=='ARRIVED'&&s!=='CANCELLED';});
+  const rrqRows=rrqOpen.length?rrqOpen.map(r=>`<tr><td>${esc(fmtD(r.date))}</td><td>${esc(r.form||'—')}</td><td>${esc(r.site||'—')}</td><td>${esc(r.item||'')}</td><td>${esc(r.pn||'')}</td><td>${esc(r.qty||'')}</td><td>${r.urgent?'<b style="color:#c62828">URGENT</b> ':''}${esc(r.status||'REQUESTED')}</td></tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:#888">No open RRQs</td></tr>';
 
   const svcU=d.uavs.filter(u=>u.svc==='YES').length;
 
@@ -2775,7 +2775,7 @@ function downloadWordReport(){
   <table><tr><th>SB #</th><th>Date</th><th>System</th><th>Description</th><th>Status</th></tr>${sbRows}</table>
 
   <h2>6 · Open RMAs (All Outstanding)</h2>
-  <table><tr><th>Date</th><th>Form #</th><th>Tail</th><th>Item</th><th>Part #</th><th>Status</th><th>Shipped</th></tr>${rmaRows}</table>
+  <table><tr><th>Date</th><th>Form #</th><th>Tail</th><th>Item</th><th>Part #</th><th>Failure</th><th>Shipped</th></tr>${rmaRows}</table>
 
   <h2>7 · Open RRQs (All Outstanding)</h2>
   <table><tr><th>Date</th><th>Form #</th><th>Site</th><th>Item</th><th>Part #</th><th>Qty</th><th>Status</th></tr>${rrqRows}</table>
