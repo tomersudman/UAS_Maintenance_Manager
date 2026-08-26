@@ -887,7 +887,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.08.16-03';
+const APP_BUILD='2026.08.16-05';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -1276,6 +1276,7 @@ function pgHome(){
     {lbl:'R-MLG 10Y',freq:'10y',type:'date',key:'mlgr'},
     {lbl:'L-MLG 10Y',freq:'10y',type:'date',key:'mlgl'},
     {sep:'ENGINE (installed)'},
+    {lbl:'Monthly Run Up',type:'engRunUp'},
     {lbl:'25H OH (once)',type:'engOnce',key:'oh25done'},
     {lbl:'→50H OH',type:'engOH',key:'oh50',intv:50},
     {lbl:'→100H OH',type:'engOH',key:'oh100',intv:100},
@@ -1317,6 +1318,13 @@ function pgHome(){
       return`<td class="dc ${cHour(_rm,_iv)}"><span class="cell-d">${fmtHHMM(_rm)}</span><span class="cell-s">@${fmtHHMM(_nx)}</span><span class="mbar"><i style="width:${Math.max(0,Math.min(100,_rm/_iv*100)).toFixed(0)}%"></i></span></td>`;
     }
     if(row.type==='engDate'){if(!e)return`<td class="dc cn"><span class="cell-d">—</span></td>`;return dateTd(e[row.key],row.freq,null,e.id,'engines',false);}
+    if(row.type==='engRunUp'){
+      if(!e)return`<td class="dc cn"><span class="cell-d">—</span></td>`;
+      const _lr=lastRunDate(e);
+      if(!_lr)return`<td class="dc cn"><span class="cell-d">—</span><span class="cell-s">no runs</span></td>`;
+      const _dueR=addInt(_lr,'monthly');const _dvR=du(_dueR);
+      return`<td class="dc ${cDate(_dvR,'monthly')}" title="Last run/flight: ${fmtD(_lr)}"><span class="cell-d">${fmtD(_dueR)}</span><span class="cell-s">${_dvR!==null?fdays(_dvR):''}</span></td>`;
+    }
     if(row.type==='engOnce'){
       if(!e)return`<td class="dc cn"><span class="cell-d">—</span></td>`;
       if(e[row.key])return`<td class="dc cg"><span class="cell-d">✔ Done</span></td>`;
@@ -1710,6 +1718,7 @@ function pgEng(){
     {lbl:'UAV',type:'uav'},{lbl:'Location',type:'loc'},{lbl:'Serviceable',type:'svc'},
     {lbl:'Remarks',type:'remarks'},{lbl:'Engine Hours',type:'fh'},
     {sep:'OH INTERVALS (next threshold)'},
+    {lbl:'Monthly Run Up',type:'runup'},
     {lbl:'25H OH (one-time)',type:'once',key:'oh25done'},
     {lbl:'Next 50H OH',type:'oh',key:'oh50',intv:50},{lbl:'Next 100H OH',type:'oh',key:'oh100',intv:100},
     {lbl:'Next 200H OH',type:'oh',key:'oh200',intv:200},{lbl:'Next 300H OH',type:'oh',key:'oh300',intv:300},
@@ -1737,6 +1746,12 @@ function pgEng(){
       if(e[row.key])return`<td class="dc cg ed" data-ek="${row.key}" data-id="${e.id}" data-list="engines" data-type="checkbox_bool"><span class="cell-d">✔ Done</span></td>`;
       const rem25=25-(+e.hrs||0);
       return`<td class="dc ${rem25<=0?'cr':rem25<=5?'co':'cy'} ed" data-ek="${row.key}" data-id="${e.id}" data-list="engines" data-type="checkbox_bool"><span class="cell-d">${fmtHHMM(rem25)}</span><span class="cell-s">to 25H insp.</span></td>`;
+    }
+    if(row.type==='runup'){
+      const last=lastRunDate(e);
+      if(!last)return`<td class="dc cn"><span class="cell-d">—</span><span class="cell-s">no runs logged</span></td>`;
+      const due=addInt(last,'monthly');const dv=du(due);const cl=cDate(dv,'monthly');
+      return`<td class="dc ${cl}" title="Last run/flight: ${fmtD(last)}"><span class="cell-d">${fmtD(due)}</span><span class="cell-s">${dv!==null?fdays(dv):''}</span></td>`;
     }
     if(row.type==='oh')return hourTdEng(e[row.key],e.hrs,row.key,e.id,'engines',true,row.intv);
     if(row.type==='date')return dateTd(e[row.key],row.freq,row.key,e.id,'engines',true);
@@ -2036,7 +2051,7 @@ function pgFlt(){
   const catVals=catLabels.map(c=>faultCats[c]);
   const catColors=['#4a9eff','#2ea86b','#e05555','#4a90d9','#d97830','#9b59b6','#1abc9c'];
 
-  const flightRows=filtered.map(f=>`<tr>
+  const flightRows=filtered.map(f=>`<tr data-status="${(f.to||f.lnd)?'Flight':'Engine run'}" data-search="${[f.uav,f.base,f.payload,f.objective,f.remarks,fmtD(f.date)].filter(Boolean).join(' ').toLowerCase().replace(/"/g,'&quot;')}">
     <td class="dim">${fmtD(f.date)}</td>
     <td class="bld">${f.uav||'—'}</td>
     <td class="dim">${f.base||'—'}</td>
@@ -2097,8 +2112,9 @@ function pgFlt(){
   <div class="sdiv">Flight Log</div>
   <div class="search-bar">
     <input id="flt-search" type="text" placeholder="🔍 Search by UAV / Base / Payload / Objective..." value="${flightFilter}">
+    <select id="fll-status" class="filt-sel"><option value="ALL">Flights + engine runs</option><option value="Flight">Flights only</option><option value="Engine run">Engine runs only</option></select>
     <button class="btn sm" onclick="flightFilter='';render()">Clear</button>
-    <span style="font-size:10px;color:var(--text3)">${filtered.length}/${fl.length} shown</span>
+    <span id="fll-count" style="font-size:10px;color:var(--text3)">${filtered.length}/${fl.length} shown</span>
   </div>
   <div class="tbl-wrap"><div class="tbl-scroll" style="max-height:560px;overflow-y:auto"><table class="dt-c">
   <thead><tr><th>Date</th><th>UAV</th><th>Base</th><th>Payload</th><th>T/O</th><th>LND</th><th>Total</th><th>Eng Time</th><th>Objective</th><th>Remarks/Failures</th><th></th></tr></thead>
@@ -2896,6 +2912,28 @@ function gfd(){
   return d;
 }
 
+function applyFlightType(){
+  const sel=document.getElementById('fll-status');
+  const tb=document.getElementById('flt-tbody');
+  if(!tb)return;
+  const v=(sel&&sel.value)||'ALL';
+  let shown=0,total=0;
+  tb.querySelectorAll('tr').forEach(tr=>{
+    if(!tr.dataset.status)return;
+    total++;
+    const ok=(v==='ALL')||tr.dataset.status===v;
+    tr.style.display=ok?'':'none';
+    if(ok)shown++;
+  });
+  const c=document.getElementById('fll-count');
+  if(c)c.textContent=shown+'/'+total+' shown';
+}
+function lastRunDate(e){
+  if(!e||!e.uav)return '';
+  const fl=(S.data.flights||[]).filter(f=>String(f.uav||'')===String(e.uav)&&f.date);
+  if(!fl.length)return '';
+  return fl.reduce((m,f)=>(String(f.date)>String(m)?f.date:m),fl[0].date);
+}
 function bindTableFilter(pfx){
   const inp=document.getElementById(pfx+'-search');
   const sel=document.getElementById(pfx+'-status');
@@ -3116,6 +3154,8 @@ function bindAll(){
   if(ri)ri.addEventListener('change',e=>{if(e.target.files[0])restore(e.target.files[0])});
 
   /* Flight live search */
+  const fllSel=document.getElementById('fll-status');
+  if(fllSel&&!fllSel._bf){fllSel._bf=true;fllSel.addEventListener('change',applyFlightType);}
   const fltSearch=document.getElementById('flt-search');
   if(fltSearch){fltSearch.addEventListener('input',()=>{
     flightFilter=fltSearch.value.toLowerCase();
@@ -3123,8 +3163,9 @@ function bindAll(){
     const flSorted=[...fl].sort((a,b)=>(b.date||'').localeCompare(a.date||'')||b.id-a.id);
     const filtered=flightFilter?flSorted.filter(f=>(f.uav&&f.uav.toLowerCase().includes(flightFilter))||(f.base&&f.base.toLowerCase().includes(flightFilter))||(f.payload&&f.payload.toLowerCase().includes(flightFilter))||(f.objective&&f.objective.toLowerCase().includes(flightFilter))):flSorted;
     const tbody=document.getElementById('flt-tbody');
-    if(tbody)tbody.innerHTML=filtered.map(f=>`<tr><td class="dim">${fmtD(f.date)}</td><td class="bld">${f.uav||'—'}</td><td class="dim">${f.base||'—'}</td><td class="dim">${f.payload||'—'}</td><td class="mono">${f.to||'—'}</td><td class="mono">${f.lnd||'—'}</td><td>${+f.total>0?badge(fmtHHMM(+f.total),'bgold'):`<span class="mono" style="color:var(--text2)">—</span>`}</td><td class="mono" style="color:var(--text2)">${f.engTot?fmtHHMM(+f.engTot):'—'}</td><td>${f.objective||'—'}</td><td class="ell-wide">${f.remarks||'—'}</td><td style="white-space:nowrap;text-align:center"><button class="btn sm" data-a="edit-flight" data-id="${f.id}" title="Edit flight">✎</button> <button class="btn sm danger" data-a="del-flight" data-id="${f.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="11" style="text-align:center;padding:18px;color:var(--text3)">No matching flights</td></tr>';
+    if(tbody)tbody.innerHTML=filtered.map(f=>`<tr data-status="${(f.to||f.lnd)?'Flight':'Engine run'}"><td class="dim">${fmtD(f.date)}</td><td class="bld">${f.uav||'—'}</td><td class="dim">${f.base||'—'}</td><td class="dim">${f.payload||'—'}</td><td class="mono">${f.to||'—'}</td><td class="mono">${f.lnd||'—'}</td><td>${+f.total>0?badge(fmtHHMM(+f.total),'bgold'):`<span class="mono" style="color:var(--text2)">—</span>`}</td><td class="mono" style="color:var(--text2)">${f.engTot?fmtHHMM(+f.engTot):'—'}</td><td>${f.objective||'—'}</td><td class="ell-wide">${f.remarks||'—'}</td><td style="white-space:nowrap;text-align:center"><button class="btn sm" data-a="edit-flight" data-id="${f.id}" title="Edit flight">✎</button> <button class="btn sm danger" data-a="del-flight" data-id="${f.id}">✕</button></td></tr>`).join('')||'<tr><td colspan="11" style="text-align:center;padding:18px;color:var(--text3)">No matching flights</td></tr>';
     bindActions(tbody);
+    applyFlightType();
   })}
 
   /* Remark tooltips */
@@ -3143,7 +3184,8 @@ function bindAll(){
   bindTableFilter('lim');
   bindTableFilter('def');
   bindTableFilter('flx');
-  bindTableFilter('bat');;
+  bindTableFilter('bat');
+  applyFlightType();;
 }
 
 function bindEditable(){
