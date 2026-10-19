@@ -887,7 +887,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.08.16-05';
+const APP_BUILD='2026.10.19-01';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -1916,7 +1916,7 @@ function pgTIF(){
     const deadline=workDaysAfter(t.date,3);
     const isYellow=t.status==='Open'&&!t.reply&&deadline&&new Date()>deadline;
     return`<tr class="${isYellow?'tif-warn':''}">
-      <td class="bld">${t.num}</td>
+      <td class="ed bld" data-ek="num" data-id="${t.id}" data-list="tifs" data-type="text">${t.num||'—'}</td>
       <td class="ed ell" data-ek="desc" data-id="${t.id}" data-list="tifs" data-type="text" style="max-width:220px">${t.desc||'—'}</td>
       <td class="ed" data-ek="cat" data-id="${t.id}" data-list="tifs" data-type="select_cat">${t.cat||'—'}</td>
       <td class="dim">${fmtD(t.date)}</td>
@@ -2463,7 +2463,7 @@ function renderModal(){
       f('Remarks',inp('remarks',r.remarks)));
 
   const forms={
-    tif:g(f('TIF Date (leave blank for today)',inp('date',toI(r.date),'date')),f('Description',inp('desc',r.desc)),f('Category',sel('cat',CATS,r.cat))),
+    tif:g(f('TIF #',inp('num',r.num)),f('TIF Date (leave blank for today)',inp('date',toI(r.date),'date')),f('Category',sel('cat',CATS,r.cat)))+g(f('Description',inp('desc',r.desc))),
     sb:g(f('SB #',inp('num',r.num)),f('Date',inp('date',toI(r.date),'date')),f('System',inp('sys',r.sys)),f('Status',sel('status',SB_ST,r.status||'Open')))+g(f('Description',inp('desc',r.desc)),f('Remarks',inp('remarks',r.remarks))),
     rma:g(f('Date',inp('date',toI(r.date),'date')),f('Status',sel('status',RMA_ST,r.status||'Open')),f('Form #',inp('form',r.form)),f('Location',sel('loc',RMA_LOCS,r.loc)))+g(f('System S/N',inp('tail',r.tail)),f('Item',inp('item',r.item)),f('Part #',inp('pn',r.pn)))+g(f('S/N Sent',inp('snSent',r.snSent)),f('S/N Received',inp('snRcvd',r.snRcvd)),f('Note',inp('note',r.note))),
     rrq:g(f('Date',inp('date',toI(r.date),'date')),f('Status',sel('status',RRQ_ST,r.status||'REQUESTED')),f('Urgent',sel('urgent',['YES','NO'],r.urgent?'YES':'NO')),f('Arrival',inp('arrival',toI(r.arrival),'date')))+g(f('Form #',inp('form',r.form)),f('Site',sel('site',RMA_LOCS,r.site)),f('System',inp('sys',r.sys)))+g(f('Item',inp('item',r.item)),f('Part #',inp('pn',r.pn)),f('Qty',inp('qty',r.qty,'number')),f('Note',inp('note',r.note))),
@@ -3028,7 +3028,7 @@ function bindActions(root){
         }
         else{
           const newItem={id:nid(list),...fd};
-          if(t==='tif'){newItem.num=String(d.tifs.length+1);newItem.status='Open';if(!newItem.date)newItem.date=todayStr();}
+          if(t==='tif'){newItem.status='Open';if(!newItem.date)newItem.date=todayStr();}
           if((t==='limit'||t==='defect')&&!newItem.date)newItem.date=todayStr();
 
           list.push(newItem);
