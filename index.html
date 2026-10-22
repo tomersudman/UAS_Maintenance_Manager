@@ -179,10 +179,13 @@ table.dt-c td.ell-wide{max-width:340px;min-width:180px;overflow:hidden;text-over
 .rmk-wrap textarea{flex:1;border:none;outline:none;resize:vertical;background:transparent;color:var(--text);font-family:var(--font);font-size:12px;line-height:1.5;padding:6px 8px;min-height:132px}
 .ell-rmk{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:820px){.ell-rmk{max-width:110px}}
-.mv-cell{white-space:nowrap;padding:2px 3px!important;text-align:center}
-.btn.mv{padding:0 4px;font-size:9px;line-height:1.5;min-width:18px;margin:0 1px;opacity:.75}
-.btn.mv:hover:not(:disabled){opacity:1}
-.btn.mv:disabled{opacity:.2;cursor:default}
+.drag-cell{width:1px;padding:2px 4px!important;text-align:center}
+.drag-h{display:inline-flex;align-items:center;justify-content:center;cursor:grab;color:var(--text3);padding:3px 2px;touch-action:none;-webkit-user-select:none;user-select:none}
+.drag-h:hover{color:var(--gold)}
+.drag-h:active{cursor:grabbing}
+tr.dragging{opacity:.55;background:var(--gold2)!important}
+tr.dragging td{border-top:1px solid var(--gold3);border-bottom:1px solid var(--gold3)}
+@media(max-width:820px){.drag-h{padding:6px 4px}}
 .tail-warn{cursor:pointer;font-weight:900;margin-left:3px;font-size:12px;padding:0 3px;-webkit-tap-highlight-color:transparent}
 @media(max-width:820px){.tail-warn{font-size:14px;padding:2px 5px}}
 .dt-c tbody tr.grp-top>td{border-top:2px solid var(--border2)}
@@ -891,7 +894,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.10.22-01';
+const APP_BUILD='2026.10.22-02';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -1247,6 +1250,9 @@ function normRRQ(d){
         let mx=d.payloads.reduce((m,p)=>Math.max(m,+p.id||0),0);
         for(let i=sp;i<7;i++)d.payloads.push({id:++mx,type:'Spectro',sn:'',uav:'',loc:'U-Tapao',purge6m:'',fork6m:'',sphere1y:'',svc:'YES',remarks:''});
       }
+      /* keep each payload type grouped together (Spectro first, then T80) */
+      const rank=p=>p.type==='Spectro'?0:p.type==='T80'?1:2;
+      d.payloads=d.payloads.map((p,i)=>({p,i})).sort((a,b)=>rank(a.p)-rank(b.p)||a.i-b.i).map(x=>x.p);
     }if(!Array.isArray(d.batteries))d.batteries=Array(21).fill(0).map((_,i)=>({id:i+1,sn:'',uav:'',charge1m:'',learn6m:'',remarks:''}));}
   if(d&&Array.isArray(d.rrqs))d.rrqs.forEach(r=>{
     const s=String(r.status||'').toUpperCase();
@@ -1928,8 +1934,8 @@ function pgTIF(){
   const tableRows=rows.map((t,ri)=>{
     const deadline=workDaysAfter(t.date,3);
     const isYellow=t.status==='Open'&&!t.reply&&deadline&&new Date()>deadline;
-    return`<tr class="${isYellow?'tif-warn':''}">
-      ${canMove?`<td class="mv-cell"><button class="btn mv" data-a="tif-up" data-id="${t.id}" title="Move up"${ri===0?' disabled':''}>▲</button><button class="btn mv" data-a="tif-down" data-id="${t.id}" title="Move down"${ri===rows.length-1?' disabled':''}>▼</button></td>`:''}
+    return`<tr class="${isYellow?'tif-warn':''}" data-rid="${t.id}">
+      ${canMove?`<td class="drag-cell"><span class="drag-h" title="Drag to reorder"><svg width="11" height="17" viewBox="0 0 11 17" fill="none"><path d="M5.5 1.4 L9.6 6.4 H1.4 Z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M5.5 15.6 L9.6 10.6 H1.4 Z" fill="currentColor" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg></span></td>`:''}
       <td class="ed bld" data-ek="num" data-id="${t.id}" data-list="tifs" data-type="text">${t.num||'—'}</td>
       <td class="ed ell" data-ek="desc" data-id="${t.id}" data-list="tifs" data-type="text" style="max-width:220px">${t.desc||'—'}</td>
       <td class="ed" data-ek="cat" data-id="${t.id}" data-list="tifs" data-type="select_cat">${t.cat||'—'}</td>
@@ -1951,7 +1957,7 @@ function pgTIF(){
   </div>
   <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
   <thead><tr>${canMove?'<th style="width:1px"></th>':''}<th>#</th><th>Description</th><th>Category</th><th>Date Created</th><th>Reply Date</th><th>Status</th><th>Remarks</th><th></th></tr></thead>
-  <tbody>${tableRows||'<tr><td colspan="${canMove?9:8}" style="text-align:center;padding:18px;color:var(--text3)">No TIF records</td></tr>'}</tbody>
+  <tbody id="tif-tbody">${tableRows||'<tr><td colspan="${canMove?9:8}" style="text-align:center;padding:18px;color:var(--text3)">No TIF records</td></tr>'}</tbody>
   </table></div></div></div></div>`;
 }
 function pgSB(){
@@ -2787,6 +2793,44 @@ function downloadWordReport(){
   const satRows=d.satcoms.map(s=>`<tr><td>Satcom</td><td><b>${esc(s.name)}</b></td><td>${esc(s.site||'—')}</td><td>${statusChip(svcTxt(s.svc),svcColor(s.svc))}</td><td class="nd">${nextDue(s,SAT_CHK)}</td><td class="rmk">${esc(s.remarks||'')}</td></tr>`).join('');
   const groundRows=gcsRows+gdtRows+satRows;
 
+  // ── Maintenance performed in range ──
+  const inR=s=>{if(!s)return false;const t=new Date(String(s).slice(0,10)+'T12:00:00');return !isNaN(t)&&t>=fromD&&t<=toD;};
+  const PAY_CHK=[{key:'purge6m',freq:'6m',lbl:'Purging 6M'},{key:'fork6m',freq:'6m',lbl:'Fork Desiccant 6M'},{key:'sphere1y',freq:'1y',lbl:'Sphere Desiccant 12M'}];
+  const BAT_CHK=[{key:'charge1m',freq:'monthly',lbl:'Charging 1M'},{key:'learn6m',freq:'6m',lbl:'Learning 6M'}];
+  const FLT_CHK=[{key:'monthly',freq:'monthly',lbl:'Monthly'},{key:'annual',freq:'1y',lbl:'Annual'},{key:'bat4y',freq:'4y',lbl:'Battery 4Y'}];
+  const TOOL_CHK=[{key:'calib',freq:'1y',lbl:'Annual Calibration'}];
+  const GEN_CHK=[{key:'inspDate',freq:'1y',lbl:'Inspection'}];
+  const maint=[];
+  const scan=(list,checks,group,nameOf)=>{(list||[]).forEach(o=>{checks.forEach(c=>{
+    const v=o[c.key];
+    if(!inR(v))return;
+    const due=addInt(v,c.freq);
+    maint.push({date:String(v).slice(0,10),group,unit:nameOf(o)||'—',insp:c.lbl,due:due?fmtD(due):'—'});
+  });});};
+  scan(d.uavs,UAV_CHK,'UAV',u=>u.tail);
+  scan(d.engines,ENG_CHK,'Engine',e=>e.num);
+  scan(d.gcs,GCS_CHK,'GCS',g=>g.unit);
+  scan(d.gdt,GDT_CHK,'GDT',g=>g.unit);
+  scan(d.satcoms,SAT_CHK,'Satcom',s=>s.name);
+  scan(d.payloads,PAY_CHK,'Payload',p=>`${p.type||''} ${p.sn||''}`.trim());
+  scan(d.batteries,BAT_CHK,'Battery',b=>b.sn||('#'+b.id));
+  scan(d.flt,FLT_CHK,'FLT',f=>f.item);
+  scan(d.gse_tools,TOOL_CHK,'Tool',t=>t.item);
+  scan(d.gse_gens,GEN_CHK,'Generator',g=>g.item);
+  maint.sort((a,b)=>a.date.localeCompare(b.date)||a.group.localeCompare(b.group));
+  const maintRows=maint.length?maint.map(m=>`<tr><td>${esc(fmtD(m.date))}</td><td>${esc(m.group)}</td><td><b>${esc(m.unit)}</b></td><td>${esc(m.insp)}</td><td>${esc(m.due)}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#888">No inspections recorded in this period</td></tr>';
+
+  // ── Flights conducted in range ──
+  const flIn=(d.flights||[]).filter(f=>inR(f.date)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const isFl=f=>!!(f.to||f.lnd);
+  const flCount=flIn.filter(isFl).length, runCount=flIn.length-flCount;
+  const flHours=flIn.reduce((s,f)=>s+(+f.total||0),0);
+  const flightRowsR=flIn.length?flIn.map(f=>`<tr><td>${esc(fmtD(f.date))}</td><td><b>${esc(f.uav||'—')}</b></td><td>${isFl(f)?'Flight':'Engine run'}</td><td>${esc(f.base||'—')}</td><td>${esc(f.payload||'—')}</td><td>${esc(f.to||'—')}</td><td>${esc(f.lnd||'—')}</td><td>${+f.total>0?esc(fmtHHMM(+f.total)):'—'}</td><td>${esc(f.objective||'')}</td></tr>`).join(''):'<tr><td colspan="9" style="text-align:center;color:#888">No flights in this period</td></tr>';
+
+  // ── New faults opened in range ──
+  const faIn=(d.faults||[]).filter(f=>inR(f.date)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  const faultRowsR=faIn.length?faIn.map(f=>`<tr><td>${esc(fmtD(f.date))}</td><td><b>${esc(f.uav||'—')}</b></td><td>${esc(f.system||'—')}</td><td>${esc(f.subsystem||'')}</td><td>${esc(f.sn||'')}</td><td>${esc(f.tif||'')}</td><td>${f.sentRepair?'Yes':'No'}</td><td class="rmk">${esc(f.remarks||'')}</td></tr>`).join(''):'<tr><td colspan="8" style="text-align:center;color:#888">No new faults in this period</td></tr>';
+
   // ── TIFs in range ──
   const tifIn=d.tifs.filter(t=>{const st=(t.status||'Open').toLowerCase();return st!=='closed'&&st!=='resolved';});
   const tifRows=tifIn.length?tifIn.map(t=>`<tr><td>${esc(fmtD(t.date))}</td><td>${esc(t.cat||'—')}</td><td>${esc(t.desc||'')}</td><td>${esc(t.status||'Open')}</td><td>${esc(t.remarks||'')}</td></tr>`).join(''):'<tr><td colspan="5" style="text-align:center;color:#888">No open TIFs</td></tr>';
@@ -2843,16 +2887,26 @@ function downloadWordReport(){
   <h2>3 · Ground Systems (GCS / GDT / Satcom)</h2>
   <table><tr><th>Type</th><th>Unit</th><th>Location</th><th>Status</th><th>Next Due Maintenance</th><th>Remarks</th></tr>${groundRows}</table>
 
-  <h2>4 · TIFs (All Open)</h2>
+  <h2>4 · Maintenance Performed (${esc(fmtLong(fromV))} – ${esc(fmtLong(toV))})</h2>
+  <table><tr><th>Date Performed</th><th>Type</th><th>Unit</th><th>Inspection</th><th>Next Due</th></tr>${maintRows}</table>
+
+  <h2>5 · Flights Conducted (${esc(fmtLong(fromV))} – ${esc(fmtLong(toV))})</h2>
+  <p class="meta"><b>${flCount}</b> flight${flCount===1?'':'s'} &nbsp;·&nbsp; <b>${runCount}</b> engine run${runCount===1?'':'s'} &nbsp;·&nbsp; <b>${esc(fmtHHMM(flHours)||'00:00')}</b> total flight hours</p>
+  <table><tr><th>Date</th><th>UAV</th><th>Type</th><th>Base</th><th>Payload</th><th>T/O</th><th>LND</th><th>Total</th><th>Objective</th></tr>${flightRowsR}</table>
+
+  <h2>6 · New Faults Opened (${esc(fmtLong(fromV))} – ${esc(fmtLong(toV))})</h2>
+  <table><tr><th>Date</th><th>UAV</th><th>System</th><th>Subsystem</th><th>S/N</th><th>TIF #</th><th>Sent</th><th>Remarks</th></tr>${faultRowsR}</table>
+
+  <h2>7 · TIFs (All Open)</h2>
   <table><tr><th>Date</th><th>System</th><th>Description</th><th>Status</th><th>Remarks</th></tr>${tifRows}</table>
 
-  <h2>5 · Service Bulletins (All Open)</h2>
+  <h2>8 · Service Bulletins (All Open)</h2>
   <table><tr><th>SB #</th><th>Date</th><th>System</th><th>Description</th><th>Status</th></tr>${sbRows}</table>
 
-  <h2>6 · Open RMAs (All Outstanding)</h2>
+  <h2>9 · Open RMAs (All Outstanding)</h2>
   <table><tr><th>Date</th><th>Form #</th><th>Tail</th><th>Item</th><th>Part #</th><th>Failure</th><th>Shipped</th></tr>${rmaRows}</table>
 
-  <h2>7 · Open RRQs (All Outstanding)</h2>
+  <h2>10 · Open RRQs (All Outstanding)</h2>
   <table><tr><th>Date</th><th>Form #</th><th>Site</th><th>Item</th><th>Part #</th><th>Qty</th><th>Status</th></tr>${rrqRows}</table>
 
   </body></html>`;
@@ -2949,6 +3003,75 @@ function lastRunDate(e){
   const fl=(S.data.flights||[]).filter(f=>String(f.uav||'')===String(e.uav)&&f.date);
   if(!fl.length)return '';
   return fl.reduce((m,f)=>(String(f.date)>String(m)?f.date:m),fl[0].date);
+}
+function bindTifDrag(){
+  const tb=document.getElementById('tif-tbody');
+  if(!tb||tb._dragBound)return;
+  tb._dragBound=true;
+  let dragRow=null,touchRow=null;
+  const rowsOf=()=>Array.from(tb.querySelectorAll('tr[data-rid]'));
+  const disarm=()=>rowsOf().forEach(r=>{r.draggable=false;});
+  const placeBy=(row,y)=>{
+    const over=document.elementFromPoint(
+      row.getBoundingClientRect().left+8,y);
+    const t=over&&over.closest?over.closest('tr[data-rid]'):null;
+    if(!t||t===row||t.parentNode!==tb)return;
+    const r=t.getBoundingClientRect();
+    tb.insertBefore(row,((y-r.top)/r.height>0.5)?t.nextSibling:t);
+  };
+  const commit=()=>{
+    const order=rowsOf().map(r=>+r.dataset.rid);
+    const list=S.data.tifs,byId={};
+    list.forEach(x=>{byId[x.id]=x;});
+    const next=order.map(id=>byId[id]).filter(Boolean);
+    if(next.length!==list.length)return;
+    if(!next.some((x,i)=>x!==list[i]))return;
+    S.data.tifs=next;
+    logAction('Reordered TIF list','tifs');
+    sv(S.data);render();toast('Order saved');
+  };
+  /* mouse / desktop */
+  tb.addEventListener('mousedown',e=>{
+    const h=e.target.closest('.drag-h');if(!h)return;
+    const tr=h.closest('tr[data-rid]');if(tr)tr.draggable=true;
+  });
+  document.addEventListener('mouseup',disarm);
+  tb.addEventListener('dragstart',e=>{
+    const tr=e.target.closest('tr[data-rid]');
+    if(!tr||!tr.draggable){e.preventDefault();return;}
+    dragRow=tr;tr.classList.add('dragging');
+    try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',tr.dataset.rid);}catch(_){}
+  });
+  tb.addEventListener('dragover',e=>{
+    if(!dragRow)return;
+    e.preventDefault();
+    const over=e.target.closest('tr[data-rid]');
+    if(!over||over===dragRow)return;
+    const r=over.getBoundingClientRect();
+    tb.insertBefore(dragRow,((e.clientY-r.top)/r.height>0.5)?over.nextSibling:over);
+  });
+  tb.addEventListener('drop',e=>{e.preventDefault();});
+  tb.addEventListener('dragend',()=>{
+    if(dragRow)dragRow.classList.remove('dragging');
+    disarm();dragRow=null;commit();
+  });
+  /* touch / phone */
+  tb.addEventListener('touchstart',e=>{
+    const h=e.target.closest('.drag-h');if(!h)return;
+    touchRow=h.closest('tr[data-rid]');
+    if(touchRow)touchRow.classList.add('dragging');
+  },{passive:true});
+  tb.addEventListener('touchmove',e=>{
+    if(!touchRow)return;
+    e.preventDefault();
+    placeBy(touchRow,e.touches[0].clientY);
+  },{passive:false});
+  const endTouch=()=>{
+    if(!touchRow)return;
+    touchRow.classList.remove('dragging');touchRow=null;commit();
+  };
+  tb.addEventListener('touchend',endTouch);
+  tb.addEventListener('touchcancel',endTouch);
 }
 function bindTableFilter(pfx){
   const inp=document.getElementById(pfx+'-search');
@@ -3113,16 +3236,6 @@ function bindActions(root){
       logAction('Added battery row','batteries');
       sv(d);render();toast('Battery added — click cells to fill in');return;
     }
-    if(a==='tif-up'||a==='tif-down'){
-      if(!canAdmin()){toast('🔒 Admin only');return;}
-      const list=d.tifs,i0=list.findIndex(x=>x.id===id);
-      if(i0<0)return;
-      const j0=a==='tif-up'?i0-1:i0+1;
-      if(j0<0||j0>=list.length)return;
-      [list[i0],list[j0]]=[list[j0],list[i0]];
-      logAction(`Reordered TIF ${list[j0].num||''}`,'tifs');
-      sv(d);render();return;
-    }
     if(a==='tail-alerts'){S.tailAlert=el.dataset.tail||'';render();return;}
     if(a==='close-tail-alerts'){S.tailAlert=null;render();return;}
     if(a==='edit-limit'||a==='edit-defect'){
@@ -3211,6 +3324,7 @@ function bindAll(){
   bindTableFilter('def');
   bindTableFilter('flx');
   bindTableFilter('bat');
+  bindTifDrag();
   applyFlightType();;
 }
 
