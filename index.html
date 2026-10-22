@@ -179,6 +179,10 @@ table.dt-c td.ell-wide{max-width:340px;min-width:180px;overflow:hidden;text-over
 .rmk-wrap textarea{flex:1;border:none;outline:none;resize:vertical;background:transparent;color:var(--text);font-family:var(--font);font-size:12px;line-height:1.5;padding:6px 8px;min-height:132px}
 .ell-rmk{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:820px){.ell-rmk{max-width:110px}}
+.mv-cell{white-space:nowrap;padding:2px 3px!important;text-align:center}
+.btn.mv{padding:0 4px;font-size:9px;line-height:1.5;min-width:18px;margin:0 1px;opacity:.75}
+.btn.mv:hover:not(:disabled){opacity:1}
+.btn.mv:disabled{opacity:.2;cursor:default}
 .tail-warn{cursor:pointer;font-weight:900;margin-left:3px;font-size:12px;padding:0 3px;-webkit-tap-highlight-color:transparent}
 @media(max-width:820px){.tail-warn{font-size:14px;padding:2px 5px}}
 .dt-c tbody tr.grp-top>td{border-top:2px solid var(--border2)}
@@ -887,7 +891,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.10.20-01';
+const APP_BUILD='2026.10.22-01';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -928,8 +932,9 @@ function parseHHMM(s){if(!s)return null;if(s.includes(':')){ const[h,m]=s.split(
 function uavHL(thresh,fh){if(!thresh||isNaN(+thresh))return null;return(+thresh)-(+fh||0)}
 function engHL(thresh,hrs){if(!thresh||isNaN(+thresh))return null;return(+thresh)-(+hrs||0)}
 
-function cDate(days,freq){if(days===null)return'cn';if(days<0)return'cr';const t=INT[freq]||30;if(days<=7)return'cr';if(days<=t*0.15)return'co';if(days<=t*0.35)return'cy';return'cg'}
-function cHour(rem,intv){if(rem===null||isNaN(+rem))return'cn';if(+rem<=0)return'cr';if(+rem<=intv*0.1)return'cr';if(+rem<=intv*0.2)return'co';if(+rem<=intv*0.35)return'cy';return'cg'}
+/* red = overdue only; orange = due soon; yellow = approaching; green = ok */
+function cDate(days,freq){if(days===null)return'cn';if(days<0)return'cr';const t=INT[freq]||30;if(days<=7||days<=t*0.15)return'co';if(days<=t*0.35)return'cy';return'cg'}
+function cHour(rem,intv){if(rem===null||isNaN(+rem))return'cn';if(+rem<=0)return'cr';if(+rem<=intv*0.2)return'co';if(+rem<=intv*0.35)return'cy';return'cg'}
 function svcCl(s){return s==='YES'?'cg':s==='NO'?'cr':s==='PARTIALLY'?'cy':'cn'}
 function svcBadge(s){return`<span class="b ${s==='YES'?'bg':s==='PARTIALLY'?'by':'br'}">${s||'?'}</span>`}
 function badge(t,c){return`<span class="b ${c}">${t}</span>`}
@@ -1210,8 +1215,8 @@ function defD(){
       {id:3,sn:'146',loc:'Songkhla',svc:'YES',remarks:''},
     ],
     payloads:[
-      ...Array(6).fill(0).map((_,i)=>({id:i+1,type:'Spectro',sn:'',uav:'',loc:'U-Tapao',purge6m:'',fork6m:'',sphere1y:'',svc:'YES',remarks:''})),
-      ...Array(3).fill(0).map((_,i)=>({id:7+i,type:'T80',sn:'',uav:'',loc:'U-Tapao',svc:'YES',remarks:''})),
+      ...Array(7).fill(0).map((_,i)=>({id:i+1,type:'Spectro',sn:'',uav:'',loc:'U-Tapao',purge6m:'',fork6m:'',sphere1y:'',svc:'YES',remarks:''})),
+      ...Array(3).fill(0).map((_,i)=>({id:8+i,type:'T80',sn:'',uav:'',loc:'U-Tapao',svc:'YES',remarks:''})),
     ],
     tifs:[],sbs:[],rmas:[
       {id:1,date:'2021-10-13',status:'Closed',num:'',loc:'U-Tapao',site:'U-Tapao',tail:'1440',shipped:true,invoice:true,arrived:true,form:'140',item:'ACTUATOR ASSY',pn:'501-17-00140-XX',snSent:'11803',snRcvd:'121805',note:'Airbrake Middle Exist'},
@@ -1235,7 +1240,14 @@ function defD(){
 }
 
 function normRRQ(d){
-  if(d){if(!Array.isArray(d.limits))d.limits=[];if(!Array.isArray(d.defects))d.defects=[];if(!Array.isArray(d.batteries))d.batteries=Array(21).fill(0).map((_,i)=>({id:i+1,sn:'',uav:'',charge1m:'',learn6m:'',remarks:''}));}
+  if(d){if(!Array.isArray(d.limits))d.limits=[];if(!Array.isArray(d.defects))d.defects=[];
+    if(Array.isArray(d.payloads)){
+      const sp=d.payloads.filter(p=>p.type==='Spectro').length;
+      if(sp>0&&sp<7){
+        let mx=d.payloads.reduce((m,p)=>Math.max(m,+p.id||0),0);
+        for(let i=sp;i<7;i++)d.payloads.push({id:++mx,type:'Spectro',sn:'',uav:'',loc:'U-Tapao',purge6m:'',fork6m:'',sphere1y:'',svc:'YES',remarks:''});
+      }
+    }if(!Array.isArray(d.batteries))d.batteries=Array(21).fill(0).map((_,i)=>({id:i+1,sn:'',uav:'',charge1m:'',learn6m:'',remarks:''}));}
   if(d&&Array.isArray(d.rrqs))d.rrqs.forEach(r=>{
     const s=String(r.status||'').toUpperCase();
     if(s==='CLOSED')r.status='ARRIVED';
@@ -1912,10 +1924,12 @@ function workDaysAfter(dateStr,n){
 function pgTIF(){
   const rows=S.data.tifs;
   const open=rows.filter(r=>r.status==='Open').length;
-  const tableRows=rows.map(t=>{
+  const canMove=canAdmin();
+  const tableRows=rows.map((t,ri)=>{
     const deadline=workDaysAfter(t.date,3);
     const isYellow=t.status==='Open'&&!t.reply&&deadline&&new Date()>deadline;
     return`<tr class="${isYellow?'tif-warn':''}">
+      ${canMove?`<td class="mv-cell"><button class="btn mv" data-a="tif-up" data-id="${t.id}" title="Move up"${ri===0?' disabled':''}>▲</button><button class="btn mv" data-a="tif-down" data-id="${t.id}" title="Move down"${ri===rows.length-1?' disabled':''}>▼</button></td>`:''}
       <td class="ed bld" data-ek="num" data-id="${t.id}" data-list="tifs" data-type="text">${t.num||'—'}</td>
       <td class="ed ell" data-ek="desc" data-id="${t.id}" data-list="tifs" data-type="text" style="max-width:220px">${t.desc||'—'}</td>
       <td class="ed" data-ek="cat" data-id="${t.id}" data-list="tifs" data-type="select_cat">${t.cat||'—'}</td>
@@ -1936,8 +1950,8 @@ function pgTIF(){
     <div class="stat-item"><div class="stat-label">Avg. Close (work days)</div><div class="stat-val" style="color:var(--gold)">${(()=>{const closed=rows.filter(r=>r.status==='Closed'&&r.date&&r.reply);if(!closed.length)return'—';const avg=closed.reduce((s,r)=>{let d=new Date(r.date),e=new Date(r.reply),count=0;while(d<e){d=new Date(d.getTime()+86400000);const day=d.getDay();if(day!==5&&day!==6)count++;}return s+count;},0)/closed.length;return avg.toFixed(1)+'d';})()}</div></div>
   </div>
   <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
-  <thead><tr><th>#</th><th>Description</th><th>Category</th><th>Date Created</th><th>Reply Date</th><th>Status</th><th>Remarks</th><th></th></tr></thead>
-  <tbody>${tableRows||'<tr><td colspan="8" style="text-align:center;padding:18px;color:var(--text3)">No TIF records</td></tr>'}</tbody>
+  <thead><tr>${canMove?'<th style="width:1px"></th>':''}<th>#</th><th>Description</th><th>Category</th><th>Date Created</th><th>Reply Date</th><th>Status</th><th>Remarks</th><th></th></tr></thead>
+  <tbody>${tableRows||'<tr><td colspan="${canMove?9:8}" style="text-align:center;padding:18px;color:var(--text3)">No TIF records</td></tr>'}</tbody>
   </table></div></div></div></div>`;
 }
 function pgSB(){
@@ -3098,6 +3112,16 @@ function bindActions(root){
       d.batteries.push({id:maxId+1,sn:'',uav:'',charge1m:'',learn6m:'',remarks:''});
       logAction('Added battery row','batteries');
       sv(d);render();toast('Battery added — click cells to fill in');return;
+    }
+    if(a==='tif-up'||a==='tif-down'){
+      if(!canAdmin()){toast('🔒 Admin only');return;}
+      const list=d.tifs,i0=list.findIndex(x=>x.id===id);
+      if(i0<0)return;
+      const j0=a==='tif-up'?i0-1:i0+1;
+      if(j0<0||j0>=list.length)return;
+      [list[i0],list[j0]]=[list[j0],list[i0]];
+      logAction(`Reordered TIF ${list[j0].num||''}`,'tifs');
+      sv(d);render();return;
     }
     if(a==='tail-alerts'){S.tailAlert=el.dataset.tail||'';render();return;}
     if(a==='close-tail-alerts'){S.tailAlert=null;render();return;}
