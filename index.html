@@ -179,6 +179,30 @@ table.dt-c td.ell-wide{max-width:340px;min-width:180px;overflow:hidden;text-over
 .rmk-wrap textarea{flex:1;border:none;outline:none;resize:vertical;background:transparent;color:var(--text);font-family:var(--font);font-size:12px;line-height:1.5;padding:6px 8px;min-height:132px}
 .ell-rmk{max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:820px){.ell-rmk{max-width:110px}}
+.bf-wrap{margin-bottom:14px}
+.bf-empty{background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--r2);padding:22px;text-align:center;font-size:12px;color:var(--text3)}
+.bf-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:10px}
+.bf-title{font-size:17px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.bf-site{font-size:11px;color:var(--text2)}
+.bf-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:10px}
+.bf-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:12px 13px}
+.bf-ch{font-size:9px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.bf-row{display:flex;gap:10px;padding:5px 0;align-items:baseline}
+.bf-row+.bf-row{border-top:1px solid var(--border)}
+.bf-k{flex:0 0 112px;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;font-weight:600}
+.bf-v{flex:1;min-width:0;font-size:12px;color:var(--text);line-height:1.5}
+.bf-num{font-family:monospace;font-size:14px;color:var(--gold)}
+.bf-d{font-size:10.5px;color:var(--text2)}
+.bf-na{font-size:11.5px;color:var(--text3);font-style:italic}
+.bf-sub{font-size:10.5px;color:var(--text2);margin-top:2px;line-height:1.45;white-space:pre-wrap}
+.bf-more{font-size:10px;color:var(--text3);margin-top:3px}
+.bf-pre{white-space:pre-wrap}
+.bf-pill{display:inline-block;font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:10px}
+.bf-warn{font-size:11px;font-weight:700;color:var(--text);margin:7px 0 5px}
+.bf-warn:first-child{margin-top:0}
+.bf-item{font-size:11.5px;padding:5px 8px;border-radius:5px;margin-bottom:4px;line-height:1.45}
+.bf-ok{font-size:11.5px;color:var(--green);font-weight:600;padding:3px 0}
+@media(max-width:820px){.bf-grid{grid-template-columns:1fr}.bf-k{flex-basis:96px}}
 .sb-tg{width:1px;padding:2px 2px 2px 6px!important;text-align:center}
 .btn.sb-exp{padding:0 5px;font-size:10px;line-height:1.6;min-width:20px;opacity:.8}
 .btn.sb-exp:hover{opacity:1}
@@ -909,7 +933,7 @@ function themeIcon(){
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.11.02-01';
+const APP_BUILD='2026.11.02-02';
 const SB_IC={
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
   uav:_sv('<path d="M16 10h4a2 2 0 0 1 0 4h-4l-4 7h-3l2-7H6l-2 2H1l2-4-2-4h3l2 2h5L9 3h3z"/>'),
@@ -2202,6 +2226,8 @@ function pgFlt(){
   <thead><tr><th style="min-width:90px">Tail number</th><th>Defect</th><th style="min-width:90px">Date</th><th>Status</th><th style="min-width:110px">Expiration of approval</th><th>Note</th><th style="width:1px"></th></tr></thead>
   <tbody id="def-tbody">${defRows()||'<tr><td colspan="7" style="text-align:center;padding:18px;color:var(--text3)">No deferred defects</td></tr>'}</tbody>
   </table></div></div>
+
+  ${renderBrief()}
   </div></div>`;
 }
 
@@ -2211,6 +2237,169 @@ function sortFlights(key){
 }
 
 /* ═══ LIMITATIONS / DEFERRED DEFECTS ═══ */
+/* ═══ FLIGHT BRIEF ═══ */
+function renderBrief(){
+  const sel=S.briefSel||'';
+  const opts=['<option value="">— select a system —</option>'].concat(
+    ALL_TAILS.map(t=>`<option value="${esc2(t)}"${t===sel?' selected':''}>${esc2(t)}</option>`)).join('');
+  let body='';
+  if(!sel){
+    body=`<div class="bf-empty">Choose a UAV, GCS or GDT to build the pre-flight picture.</div>`;
+  }else{
+    const b=briefData(sel);
+    if(!b){body=`<div class="bf-empty">No data found for ${esc2(sel)}.</div>`;}
+    else{
+      const u=b.unit,e=b.eng;
+      const dtxt=x=>x?`${esc2(x.lbl)} <span class="bf-d">${fmtD(x.date)}</span>`:'<span class="bf-na">none recorded</span>';
+      const duetxt=x=>{if(!x)return '<span class="bf-na">—</span>';
+        const cl=x.days<0?'cr':x.days<=7?'co':x.days<=30?'cy':'cg';
+        return `<span class="bf-pill ${cl}">${esc2(x.lbl)} · ${fmtD(x.due)} · ${x.days<0?Math.abs(x.days)+'d OVERDUE':x.days+'d'}</span>`;};
+      const row=(lbl,val)=>`<div class="bf-row"><div class="bf-k">${lbl}</div><div class="bf-v">${val}</div></div>`;
+      const svc=u.svc||'—';
+      const svcCls=svc==='YES'?'bg':svc==='NO'?'br':'by';
+
+      /* ── status + hours ── */
+      let head=`<div class="bf-head">
+        <div class="bf-title">${esc2(b.tailKey)}</div>
+        <span class="b ${svcCls}">${esc2(svc==='YES'?'Serviceable':svc==='NO'?'Unserviceable':svc)}</span>
+        <span class="bf-site">${esc2(u.site||u.loc||'—')}</span>
+        ${tailWarn(b.tailKey)}
+      </div>`;
+      let s1='';
+      if(b.type==='UAV'){
+        s1+=row('Flight hours',`<b class="bf-num">${fmtHHMM(+u.fh)||'00:00'}</b>`);
+        s1+=row('Engine',e?`<b>${esc2(e.num||'—')}</b> <span class="bf-d">${esc2(e.loc||'')}</span> ${e.svc?`<span class="b ${e.svc==='YES'?'bg':e.svc==='NO'?'br':'by'}" style="margin-left:4px">${esc2(e.svc)}</span>`:''}`:'<span class="bf-na">none installed</span>');
+        s1+=row('Engine hours',e?`<b class="bf-num">${fmtHHMM(+e.hrs)||'00:00'}</b>`:'<span class="bf-na">—</span>');
+      }
+      s1+=row('Remarks',u.remarks?`<span class="bf-pre">${esc2(u.remarks)}</span>`:'<span class="bf-na">none</span>');
+      if(b.type==='UAV'&&e&&e.remarks)s1+=row('Engine remarks',`<span class="bf-pre">${esc2(e.remarks)}</span>`);
+
+      /* ── inspections ── */
+      let s2=row('Last inspection',dtxt(b.lastInsp))+row('Next due',duetxt(b.nextDue));
+      if(b.type==='UAV'&&e){
+        s2+=row('Engine last insp.',dtxt(b.engLastInsp));
+        s2+=row('Engine next due',duetxt(b.engNextDue));
+      }
+
+      /* ── history ── */
+      const f0=b.faults[0];
+      let s3=row('Last fault',f0?`<b>${esc2(f0.system||'—')}</b>${f0.subsystem?' / '+esc2(f0.subsystem):''} <span class="bf-d">${fmtD(f0.date)}</span>${f0.remarks?`<div class="bf-sub">${esc2(f0.remarks)}</div>`:''}${b.faults.length>1?`<div class="bf-more">+${b.faults.length-1} earlier fault${b.faults.length>2?'s':''}</div>`:''}`:'<span class="bf-na">no faults recorded</span>');
+      const sb0=b.sbDone[0];
+      s3+=row('Last SB performed',sb0?`<b>${esc2(sb0.num||'—')}</b> <span class="bf-d">${fmtD(sb0.date)}</span>${sb0.desc?`<div class="bf-sub">${esc2(sb0.desc)}</div>`:''}`:'<span class="bf-na">none recorded</span>');
+      if(b.sbPending.length)s3+=row('SBs outstanding',`<span class="bf-pill cr">${b.sbPending.length} not yet performed</span><div class="bf-sub">${b.sbPending.map(s=>esc2(s.num||'?')).join(', ')}</div>`);
+      const t0=b.tifs[0];
+      s3+=row('Last TIF',t0?`<b>#${esc2(t0.num||'—')}</b> <span class="bf-d">${fmtD(t0.date)}</span> ${badge(t0.status||'Open',String(t0.status)==='Closed'?'bg':'br')}${t0.desc?`<div class="bf-sub">${esc2(t0.desc)}</div>`:''}${b.tifs.length>1?`<div class="bf-more">+${b.tifs.length-1} more mentioning this system</div>`:''}`:'<span class="bf-na">none mentioning this system</span>');
+
+      /* ── restrictions ── */
+      let s4='';
+      if(b.limits.length){
+        s4+=`<div class="bf-warn">⚠️ ${b.limits.length} open limitation${b.limits.length>1?'s':''} (FSF)</div>`;
+        s4+=b.limits.map(l=>`<div class="bf-item cy">${esc2(l.cond||'—')} <span class="bf-d">${fmtD(l.date)}</span></div>`).join('');
+      }
+      if(b.defects.length){
+        s4+=`<div class="bf-warn">🔧 ${b.defects.length} deferred defect${b.defects.length>1?'s':''}</div>`;
+        s4+=b.defects.map(x=>{
+          const dd=x.expiry?du(x.expiry):null;
+          const cl=dd!==null&&dd<0?'cr':dd!==null&&dd<=7?'co':String(x.status)==='Open'?'cy':'cg';
+          const exp=x.expiry?` · approval ${dd<0?Math.abs(dd)+'d EXPIRED':'expires '+fmtD(x.expiry)+' ('+dd+'d)'}`:'';
+          return `<div class="bf-item ${cl}">${esc2(x.defect||'—')} <span class="bf-d">${esc2(x.status||'')}${exp}</span>${x.note?`<div class="bf-sub">${esc2(x.note)}</div>`:''}</div>`;
+        }).join('');
+      }
+      if(!s4)s4=`<div class="bf-ok">✓ No open limitations or deferred defects</div>`;
+
+      body=head+`<div class="bf-grid">
+        <div class="bf-card"><div class="bf-ch">Status &amp; hours</div>${s1}</div>
+        <div class="bf-card"><div class="bf-ch">Inspections</div>${s2}</div>
+        <div class="bf-card"><div class="bf-ch">History</div>${s3}</div>
+        <div class="bf-card"><div class="bf-ch">Limitations &amp; deferred defects</div>${s4}</div>
+      </div>`;
+    }
+  }
+  return`<div class="ph" style="margin-top:20px"><div><div class="sdiv" style="margin:0">Flight Brief</div></div></div>
+  <div class="search-bar">
+    <select id="bf-sel" class="filt-sel" style="min-width:190px;font-size:12px">${opts}</select>
+    ${sel?`<button class="btn sm" id="bf-clear">Clear</button>`:''}
+  </div>
+  <div class="bf-wrap">${body}</div>`;
+}
+
+const BRIEF_CHK={
+  UAV:[{k:'monthly',f:'monthly',l:'Monthly'},{k:'q3',f:'3m',l:'3-Month'},{k:'q6',f:'6m',l:'6-Month'},
+       {k:'cor5y',f:'5y',l:'Corrosion 5Y'},{k:'pitot3y',f:'3y',l:'Pitot/Fuel & Air 3Y'},
+       {k:'fpr8y',f:'8y',l:'Fuel Press. Reg. 8Y'},{k:'vt8y',f:'10y',l:'V-Tail 10Y'},
+       {k:'mlgr',f:'10y',l:'R-MLG 10Y'},{k:'mlgl',f:'10y',l:'L-MLG 10Y'}],
+  ENG:[{k:'coolant2y',f:'2y',l:'Coolant 2Y'},{k:'prop4y',f:'4y',l:'Propeller 4Y'},
+       {k:'rub5y',f:'5y',l:'Rubber Parts 5Y'},{k:'pres',f:'1y',l:'Preservation 1Y'}],
+  GCS:[{k:'monthly',f:'monthly',l:'Monthly'},{k:'qtr',f:'3m',l:'Quarterly'},{k:'annual',f:'1y',l:'Annual'},
+       {k:'bat3y',f:'3y',l:'UPS Battery 3Y'},{k:'cbat5y',f:'5y',l:'Comp Battery 5Y'}],
+  GDT:[{k:'monthly',f:'monthly',l:'Monthly'},{k:'qtr',f:'3m',l:'Quarterly'},{k:'annual',f:'1y',l:'Annual'},
+       {k:'bat2y',f:'2y',l:'Battery 2Y'}]
+};
+/* most recent completed inspection on a unit */
+function briefLastInsp(obj,checks){
+  let best=null;
+  (checks||[]).forEach(c=>{const v=obj&&obj[c.k];if(!v)return;
+    if(!best||String(v)>String(best.date))best={date:String(v).slice(0,10),lbl:c.l,freq:c.f};});
+  return best;
+}
+/* soonest upcoming/overdue inspection on a unit */
+function briefNextDue(obj,checks){
+  let best=null;
+  (checks||[]).forEach(c=>{const v=obj&&obj[c.k];if(!v)return;
+    const due=addInt(v,c.f);if(!due)return;const dd=du(due);
+    if(dd===null)return;
+    if(!best||dd<best.days)best={lbl:c.l,due,days:dd};});
+  return best;
+}
+/* does a stored system reference point at this unit (or its engine)? handles legacy bare numbers */
+function briefRefMatch(raw,type,num,engNum){
+  const s=String(raw==null?'':raw).trim();
+  if(!s)return false;
+  const m=s.match(/^(UAV|GCS|GDT|Engine|Satcom|OPATS)\s+(.*)$/i);
+  if(m){
+    const p=m[1].toUpperCase(),v=m[2].trim();
+    if(p==='ENGINE')return !!engNum&&v===String(engNum);
+    return p===String(type).toUpperCase()&&v===String(num);
+  }
+  return s===String(num)||(!!engNum&&s===String(engNum));
+}
+function briefData(sel){
+  const d=S.data,m=String(sel||'').match(/^(UAV|GCS|GDT)\s+(.*)$/);
+  if(!m)return null;
+  const type=m[1],num=m[2].trim(),tailKey=type+' '+num;
+  let unit=null,eng=null;
+  if(type==='UAV'){unit=(d.uavs||[]).find(u=>String(u.tail)===num);eng=(d.engines||[]).find(e=>String(e.uav)===num)||null;}
+  if(type==='GCS')unit=(d.gcs||[]).find(g=>String(g.unit)===num);
+  if(type==='GDT')unit=(d.gdt||[]).find(g=>String(g.unit)===num);
+  if(!unit)return null;
+  const engNum=eng&&eng.num&&eng.num!=='-'?String(eng.num):'';
+  const byDateDesc=(a,b)=>String(b.date||'').localeCompare(String(a.date||''));
+  /* faults on this unit (or its installed engine) */
+  const faults=(d.faults||[]).filter(f=>briefRefMatch(f.uav,type,num,engNum)).sort(byDateDesc);
+  /* SBs: scope matches this type */
+  const sbAll=(d.sbs||[]).filter(s=>String(s.sys||'').toUpperCase()===type);
+  const sbDone=sbAll.filter(s=>sbIsDone(s,num)).sort(byDateDesc);
+  const sbPending=sbAll.filter(s=>!sbIsDone(s,num)&&String(s.status||'Open').toLowerCase()!=='closed'&&String(s.status||'').toLowerCase()!=='n/a');
+  /* TIFs whose description mentions this unit's number (or engine S/N) */
+  const needles=[num].concat(engNum?[engNum]:[]);
+  const tifs=(d.tifs||[]).filter(t=>{
+    const hay=((t.desc||'')+' '+(t.remarks||'')).toLowerCase();
+    return needles.some(n=>n&&hay.indexOf(String(n).toLowerCase())>=0);
+  }).sort(byDateDesc);
+  /* open limitations + deferred defects */
+  const limits=(d.limits||[]).filter(l=>l.tail===tailKey).sort(byDateDesc);
+  const defects=(d.defects||[]).filter(x=>x.tail===tailKey).filter(x=>{
+    if(String(x.status)==='Open')return true;
+    if(String(x.status)==='Approved'){const dd=x.expiry?du(x.expiry):null;return dd===null||dd>=0||true;}
+    return true;
+  }).sort(byDateDesc);
+  return {type,num,tailKey,unit,eng,engNum,
+    lastInsp:briefLastInsp(unit,BRIEF_CHK[type]),
+    nextDue:briefNextDue(unit,BRIEF_CHK[type]),
+    engLastInsp:eng?briefLastInsp(eng,BRIEF_CHK.ENG):null,
+    engNextDue:eng?briefNextDue(eng,BRIEF_CHK.ENG):null,
+    faults,sbDone,sbPending,tifs,limits,defects};
+}
 function esc2(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function sbUnits(scope){
   const d=S.data;
@@ -3380,6 +3569,10 @@ function bindAll(){
   bindTableFilter('flx');
   bindTableFilter('bat');
   bindTifDrag();
+  const bfSel=document.getElementById('bf-sel');
+  if(bfSel&&!bfSel._bf){bfSel._bf=true;bfSel.addEventListener('change',()=>{S.briefSel=bfSel.value;render();});}
+  const bfClr=document.getElementById('bf-clear');
+  if(bfClr&&!bfClr._bf){bfClr._bf=true;bfClr.addEventListener('click',()=>{S.briefSel='';render();});}
   applyFlightType();;
 }
 
