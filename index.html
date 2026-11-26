@@ -374,8 +374,8 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
 .hb-t{font-weight:700}
 .hb-l{color:var(--text2);font-variant-numeric:tabular-nums}
 .hb-tot{font-weight:700;font-variant-numeric:tabular-nums}
-.hb-in{width:74px;padding:4px 7px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg4);color:var(--text);font-family:var(--font);font-size:11.5px;font-variant-numeric:tabular-nums}
-.hb-in:focus{outline:none;border-color:var(--gold)}
+.hb-in,.eb-in{width:74px;padding:4px 7px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg4);color:var(--text);font-family:var(--font);font-size:11.5px;font-variant-numeric:tabular-nums}
+.hb-in:focus,.eb-in:focus{outline:none;border-color:var(--gold)}
 .hb-note{font-size:10.5px;color:var(--text3);margin-top:9px;line-height:1.5}
 .sb-site{padding:10px 12px;border-bottom:1px solid var(--border)}
 .site-sel{width:100%;padding:7px 9px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg4);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer}
@@ -1014,7 +1014,7 @@ function wxLink(){
   return`<a class="wx-link" href="https://www.windy.com" target="_blank" rel="noopener noreferrer" title="Weather - opens Windy.com in a new tab" aria-label="Open Windy.com weather in a new tab"><svg width="60" height="60" viewBox="0 0 24 24" aria-hidden="true" stroke-linejoin="round"><circle cx="8" cy="8" r="3.1" fill="#d9a23f"/><path d="M8 2.3v1.2M2.3 8h1.2M4 4l.85.85M12 4l-.85.85M4 12l.85-.85" fill="none" stroke="#d9a23f" stroke-width="1.6" stroke-linecap="round"/><path d="M11 20H7.6a3.6 3.6 0 0 1-.3-7.2 5 5 0 0 1 9.5 1.3A3.2 3.2 0 0 1 16.4 20z" fill="#8fa6bd"/></svg></a>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.11.26-01';
+const APP_BUILD='2026.11.26-02';
 const SB_IC={
   brief:_sv('<path d="M8 3h8a1 1 0 0 1 1 1v16l-5-3-5 3V4a1 1 0 0 1 1-1z"/><path d="M9.5 8h5M9.5 11h5"/>'),
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
@@ -1231,6 +1231,10 @@ function openPopup(el,uid,lk,ek,type){
     else if(type==='number')v=v===''?'':+v;
     const oldV=unit[ek];
     unit[ek]=v;
+    if(lk==='engines'&&ek==='hrs'){
+      unit.hrsBase=fhRound(Math.max(0,(+v||0)-engLoggedTime(S.data,unit.num)));
+      recalcEngineHours(S.data);
+    }
     if(lk==='uavs'&&ek==='fh'){
       /* the figure typed is the TOTAL airframe hours - work back to the
          baseline so the total lands exactly on what was entered */
@@ -1390,6 +1394,8 @@ function normRRQ(d){
   });
   normAirframeHours(d);
   applyFhFix(d);
+  normEngineHours(d);
+  applyEngFix(d);
   return d;
 }
 function ld(){try{const d=localStorage.getItem('uas11');return normRRQ(d?JSON.parse(d):defD())}catch(e){return defD()}}
@@ -3060,6 +3066,17 @@ function pgSettings(){
         <td class="hb-tot">${fmtHHMM(+u.fh||0)}</td></tr>`}).join('')}
       </tbody></table>
       <div class="hb-note">Enter hours as H:MM. The total updates as soon as you leave the field, and from here on every flight you log is added automatically.</div>`):'')+
+    (canAdmin()?card('⚙️','Engine Hours',
+      'Total engine hours = the hours the engine had before it was logged in Wingman, plus every engine-time entry in the log for that engine. Both flights and engine runs count. Each entry records the engine that ran, so the hours follow the engine if it is moved to another airframe.',
+      `<table class="hb-tbl"><thead><tr><th>Engine</th><th>Fitted to</th><th>Before Wingman</th><th>Logged here</th><th>Total engine</th></tr></thead><tbody>
+      ${(S.data.engines||[]).filter(e=>e.num&&String(e.num).trim()!=='-').map(e=>{const lg=engLoggedTime(S.data,e.num);return `<tr>
+        <td class="hb-t">${esc2(e.num)}</td>
+        <td class="hb-l">${esc2(e.uav||'Storage')}</td>
+        <td><input class="eb-in" data-num="${esc2(e.num)}" value="${fmtHHMM(+e.hrsBase||0)}" placeholder="0:00"></td>
+        <td class="hb-l">${lg>0?fmtHHMM(lg):'—'}</td>
+        <td class="hb-tot">${fmtHHMM(+e.hrs||0)}</td></tr>`}).join('')}
+      </tbody></table>
+      <div class="hb-note">Enter hours as H:MM. Engine runs and taxi tests add engine time without touching airframe hours.</div>`):'')+
     card('💾','Backup &amp; Restore','Save a complete backup of all data to a file on your device, or restore from a previous backup. Restoring overwrites all current data and syncs it to the cloud.',
     '<button class="btn primary" id="st-backup">💾 Download Backup</button><button class="btn" id="st-restore">📂 Restore from File</button><input type="file" id="st-ri" accept=".json" style="display:none">')+
     card('📊','Excel Export','Export all maintenance tables to an Excel-compatible spreadsheet.',
@@ -3390,20 +3407,78 @@ function normAirframeHours(d){
   recalcAirframeHours(d);
   return d;
 }
-/* engine time only - airframe hours are derived, see above */
-function applyFlightHours(rec,sign){
-  if(!rec)return;
-  const d=S.data,sg=sign<0?-1:1;
-  const eng=+rec.engTot||0;
-  if(eng){
-    const e=(d.engines||[]).find(x=>fhSameUnit(rec.uav,x.uav));
-    if(e){
-      e.hrs=fhRound(Math.max(0,(+e.hrs||0)+sg*eng));
-      CHANGED_KEYS.add('engines');
-      logAction(`Engine ${e.num} ${sg<0?'-':'+'}${fmtHHMM(eng)} engine time (flight ${rec.date||''})`,'engines');
-    }
-  }
+/* ── ENGINE HOURS ─────────────────────────────────────────────────────────
+   Same derived model as the airframe: total = hrsBase + every engine-time
+   entry in the log that belongs to THIS engine. Both flights and engine runs
+   count, because both turn the engine.
+   An engine can move between airframes, so each log entry carries the engine
+   it ran on (stamped when the entry is saved). The hours therefore follow the
+   engine across a swap instead of staying with the airframe.             */
+function engOf(d,uav){
+  const e=(d&&d.engines||[]).find(x=>fhSameUnit(uav,x.uav));
+  return e&&e.num&&String(e.num).trim()!=='-'?String(e.num).trim():'';
 }
+/* every log entry needs to know which engine ran - older entries predate the
+   field, so they are stamped from the engine fitted to that airframe */
+function stampFlightEngine(d,rec){
+  if(!rec||!d)return;
+  if(rec.eng&&String(rec.eng).trim()&&String(rec.eng).trim()!=='-')return;
+  const n=engOf(d,rec.uav);
+  if(n)rec.eng=n;
+}
+function engLoggedTime(d,num){
+  const n=String(num==null?'':num).trim();
+  if(!n||n==='-')return 0;
+  return (d&&d.flights||[]).reduce((s,f)=>fhSameUnit(f.eng,n)?s+(+f.engTot||0):s,0);
+}
+function recalcEngineHours(d){
+  if(!d||!Array.isArray(d.engines))return;
+  let changed=false;
+  d.engines.forEach(e=>{
+    if(!e.num||String(e.num).trim()==='-')return;
+    const t=fhRound((+e.hrsBase||0)+engLoggedTime(d,e.num));
+    if(fhRound(+e.hrs||0)!==t){e.hrs=t;changed=true;}
+  });
+  if(changed)CHANGED_KEYS.add('engines');
+}
+/* one-off split of today's stored engine total into baseline + logged time,
+   so no number moves when this version is first opened */
+function normEngineHours(d){
+  if(!d||!Array.isArray(d.engines))return d;
+  (d.flights||[]).forEach(f=>stampFlightEngine(d,f));
+  d.engines.forEach(e=>{
+    if(!e.num||String(e.num).trim()==='-')return;
+    if(e.hrsBase===undefined||e.hrsBase===null||e.hrsBase==='')
+      e.hrsBase=fhRound(Math.max(0,(+e.hrs||0)-engLoggedTime(d,e.num)));
+  });
+  recalcEngineHours(d);
+  return d;
+}
+/* One-time engine-hours correction, figures confirmed by the operator on
+   26-Nov-2026, given per airframe and applied to the engine fitted to it.
+   These are TOTAL engine hours; the baseline is worked back from each figure
+   so time already in the log is not counted twice. Marked per engine so it
+   runs exactly once. */
+const ENG_FIX_ID='2026-11-26';
+const ENG_FIX={'1436':'93:35','1438':'21:28','1439':'32:15','1440':'23:56','1441':'09:46'};
+function applyEngFix(d){
+  if(!d||!Array.isArray(d.engines))return d;
+  let hit=false;
+  Object.keys(ENG_FIX).forEach(tail=>{
+    const e=(d.engines||[]).find(x=>fhSameUnit(tail,x.uav)&&x.num&&String(x.num).trim()!=='-');
+    if(!e||e.hrsFix===ENG_FIX_ID)return;
+    const v=parseHHMM(ENG_FIX[tail]);
+    if(v===null||!isFinite(v))return;
+    e.hrsBase=fhRound(Math.max(0,v-engLoggedTime(d,e.num)));
+    e.hrsFix=ENG_FIX_ID;
+    hit=true;
+  });
+  if(hit){recalcEngineHours(d);CHANGED_KEYS.add('engines');}
+  return d;
+}
+/* kept for the flight save paths - airframe and engine totals are both
+   recomputed from the log, so this only needs to refresh them */
+function applyFlightHours(rec,sign){ recalcEngineHours(S.data); }
 /* fill engTot from engine start/stop when the form did not already compute it */
 function fhFillEng(r){
   if(!r||!r.est||!r.esd||(+r.engTot))return;
@@ -3579,7 +3654,12 @@ function bindActions(root){
             const _old=S.edit;
             list[idx]={...S.edit,...fd};
             logAction(`Edited ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,list[idx])}`,lk2);
-            if(t==='flight'){fhFillEng(list[idx]);applyFlightHours(_old,-1);applyFlightHours(list[idx],1);recalcAirframeHours(d);}
+            if(t==='flight'){fhFillEng(list[idx]);stampFlightEngine(d,list[idx]);recalcAirframeHours(d);recalcEngineHours(d);}
+            if(t==='engine'&&fd.hrs!==undefined){
+              const _e=list[idx];
+              _e.hrsBase=fhRound(Math.max(0,(+_e.hrs||0)-engLoggedTime(d,_e.num)));
+              recalcEngineHours(d);
+            }
           }
         }
         else{
@@ -3589,7 +3669,7 @@ function bindActions(root){
 
           list.push(newItem);
           logAction(`Added ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,newItem)}`,lk2);
-          if(t==='flight'){fhFillEng(newItem);applyFlightHours(newItem,1);recalcAirframeHours(d);}
+          if(t==='flight'){fhFillEng(newItem);stampFlightEngine(d,newItem);recalcAirframeHours(d);recalcEngineHours(d);}
         }
       }
       sv(d);S.modal=null;S.edit=null;render();toast('Saved!');return;
@@ -3686,7 +3766,7 @@ function bindActions(root){
       const lk=DMAP[a],list=d[lk],idx=list.findIndex(r=>r.id===id);
       if(idx>=0&&confirm('Delete?')){
         const removed=list[idx];list.splice(idx,1);
-        if(lk==='flights'){applyFlightHours(removed,-1);recalcAirframeHours(d);}
+        if(lk==='flights'){recalcAirframeHours(d);recalcEngineHours(d);}
         logAction(`Deleted ${LIST_NAMES[lk]||lk} ${unitLabel(lk,removed)}`,lk);
         sv(d);render();toast('Deleted.','r');
       }
@@ -3717,6 +3797,20 @@ function bindAll(){
       const before=+u.fh||0;
       u.fhBase=nb;recalcAirframeHours(S.data);
       logAction(`UAV ${u.tail} airframe hours ${fmtHHMM(before)} → ${fmtHHMM(+u.fh||0)}`,'uavs');
+      sv(S.data);render();toast('Saved!');
+    });
+  });
+  document.querySelectorAll('.eb-in').forEach(el=>{
+    if(el._eb)return;el._eb=true;
+    el.addEventListener('change',()=>{
+      const e=(S.data.engines||[]).find(x=>String(x.num)===el.dataset.num);
+      if(!e)return;
+      const v=parseHHMM(el.value);
+      const nb=fhRound(Math.max(0,v===null?0:v));
+      if(nb===fhRound(+e.hrsBase||0)){render();return;}
+      const before=+e.hrs||0;
+      e.hrsBase=nb;recalcEngineHours(S.data);
+      logAction(`Engine ${e.num} hours ${fmtHHMM(before)} → ${fmtHHMM(+e.hrs||0)}`,'engines');
       sv(S.data);render();toast('Saved!');
     });
   });
