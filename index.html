@@ -1014,7 +1014,7 @@ function wxLink(){
   return`<a class="wx-link" href="https://www.windy.com" target="_blank" rel="noopener noreferrer" title="Weather - opens Windy.com in a new tab" aria-label="Open Windy.com weather in a new tab"><svg width="60" height="60" viewBox="0 0 24 24" aria-hidden="true" stroke-linejoin="round"><circle cx="8" cy="8" r="3.1" fill="#d9a23f"/><path d="M8 2.3v1.2M2.3 8h1.2M4 4l.85.85M12 4l-.85.85M4 12l.85-.85" fill="none" stroke="#d9a23f" stroke-width="1.6" stroke-linecap="round"/><path d="M11 20H7.6a3.6 3.6 0 0 1-.3-7.2 5 5 0 0 1 9.5 1.3A3.2 3.2 0 0 1 16.4 20z" fill="#8fa6bd"/></svg></a>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.11.26-02';
+const APP_BUILD='2026.11.26-04';
 const SB_IC={
   brief:_sv('<path d="M8 3h8a1 1 0 0 1 1 1v16l-5-3-5 3V4a1 1 0 0 1 1-1z"/><path d="M9.5 8h5M9.5 11h5"/>'),
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
@@ -3367,6 +3367,11 @@ function recalcAirframeHours(d){
   if(!d||!Array.isArray(d.uavs))return;
   let changed=false;
   d.uavs.forEach(u=>{
+    /* self-healing: if the baseline is missing, derive it from the stored
+       total instead of assuming zero, which would discard the hours the
+       aircraft arrived with */
+    if(u.fhBase===undefined||u.fhBase===null||u.fhBase===''){
+      u.fhBase=fhRound(Math.max(0,(+u.fh||0)-uavLoggedAir(d,u.tail)));changed=true;}
     const t=fhRound((+u.fhBase||0)+uavLoggedAir(d,u.tail));
     if(fhRound(+u.fh||0)!==t){u.fh=t;changed=true;}
   });
@@ -3378,19 +3383,23 @@ function recalcAirframeHours(d){
    Marked per aircraft, so it applies exactly once and can never later undo
    a flight logged after the correction. 1437 and 1442 are not listed and
    are left untouched. */
-const FH_FIX_ID='2026-11-26';
-const FH_FIX={'1436':'27:44','1438':'07:34','1439':'06:30','1440':'07:55','1441':'03:18'};
+/* declared as functions, not consts: ld() runs these long before a const
+   declared further down the file has initialised, and a ReferenceError there
+   is swallowed and silently replaces the cached data with an empty fleet */
+function fhFixId(){return'2026-11-26';}
+function fhFixTable(){return{'1436':'27:44','1438':'07:34','1439':'06:30','1440':'07:55','1441':'03:18'};}
 function applyFhFix(d){
   if(!d||!Array.isArray(d.uavs))return d;
   let hit=false;
+  const FID=fhFixId(),TBL=fhFixTable();
   d.uavs.forEach(u=>{
-    if(u.fhFix===FH_FIX_ID)return;                 // already corrected
-    const tgt=FH_FIX[String(u.tail==null?'':u.tail).trim()];
+    if(u.fhFix===FID)return;                       // already corrected
+    const tgt=TBL[String(u.tail==null?'':u.tail).trim()];
     if(tgt===undefined)return;
     const v=parseHHMM(tgt);
     if(v===null||!isFinite(v))return;
     u.fhBase=fhRound(Math.max(0,v-uavLoggedAir(d,u.tail)));
-    u.fhFix=FH_FIX_ID;
+    u.fhFix=FID;
     hit=true;
   });
   if(hit){recalcAirframeHours(d);CHANGED_KEYS.add('uavs');}
@@ -3436,6 +3445,8 @@ function recalcEngineHours(d){
   let changed=false;
   d.engines.forEach(e=>{
     if(!e.num||String(e.num).trim()==='-')return;
+    if(e.hrsBase===undefined||e.hrsBase===null||e.hrsBase===''){
+      e.hrsBase=fhRound(Math.max(0,(+e.hrs||0)-engLoggedTime(d,e.num)));changed=true;}
     const t=fhRound((+e.hrsBase||0)+engLoggedTime(d,e.num));
     if(fhRound(+e.hrs||0)!==t){e.hrs=t;changed=true;}
   });
@@ -3459,18 +3470,19 @@ function normEngineHours(d){
    These are TOTAL engine hours; the baseline is worked back from each figure
    so time already in the log is not counted twice. Marked per engine so it
    runs exactly once. */
-const ENG_FIX_ID='2026-11-26';
-const ENG_FIX={'1436':'93:35','1438':'21:28','1439':'32:15','1440':'23:56','1441':'09:46'};
+function engFixId(){return'2026-11-26';}
+function engFixTable(){return{'1436':'93:35','1438':'21:28','1439':'32:15','1440':'23:56','1441':'09:46'};}
 function applyEngFix(d){
   if(!d||!Array.isArray(d.engines))return d;
   let hit=false;
-  Object.keys(ENG_FIX).forEach(tail=>{
+  const EID=engFixId(),ETBL=engFixTable();
+  Object.keys(ETBL).forEach(tail=>{
     const e=(d.engines||[]).find(x=>fhSameUnit(tail,x.uav)&&x.num&&String(x.num).trim()!=='-');
-    if(!e||e.hrsFix===ENG_FIX_ID)return;
-    const v=parseHHMM(ENG_FIX[tail]);
+    if(!e||e.hrsFix===EID)return;
+    const v=parseHHMM(ETBL[tail]);
     if(v===null||!isFinite(v))return;
     e.hrsBase=fhRound(Math.max(0,v-engLoggedTime(d,e.num)));
-    e.hrsFix=ENG_FIX_ID;
+    e.hrsFix=EID;
     hit=true;
   });
   if(hit){recalcEngineHours(d);CHANGED_KEYS.add('engines');}
@@ -3479,6 +3491,15 @@ function applyEngFix(d){
 /* kept for the flight save paths - airframe and engine totals are both
    recomputed from the log, so this only needs to refresh them */
 function applyFlightHours(rec,sign){ recalcEngineHours(S.data); }
+/* Airborne time is normally worked out live in the form. Recompute it here
+   too, so a flight can never be saved with the times filled in but the total
+   blank - that would add nothing to the airframe and nobody would notice. */
+function fhFillTotal(r){
+  if(!r||!r.to||!r.lnd||(+r.total))return;
+  const a=parseHHMM(r.to),b=parseHHMM(r.lnd);
+  if(a===null||b===null)return;
+  r.total=fhRound(((b-a)+24)%24);
+}
 /* fill engTot from engine start/stop when the form did not already compute it */
 function fhFillEng(r){
   if(!r||!r.est||!r.esd||(+r.engTot))return;
@@ -3654,7 +3675,7 @@ function bindActions(root){
             const _old=S.edit;
             list[idx]={...S.edit,...fd};
             logAction(`Edited ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,list[idx])}`,lk2);
-            if(t==='flight'){fhFillEng(list[idx]);stampFlightEngine(d,list[idx]);recalcAirframeHours(d);recalcEngineHours(d);}
+            if(t==='flight'){fhFillTotal(list[idx]);fhFillEng(list[idx]);stampFlightEngine(d,list[idx]);recalcAirframeHours(d);recalcEngineHours(d);}
             if(t==='engine'&&fd.hrs!==undefined){
               const _e=list[idx];
               _e.hrsBase=fhRound(Math.max(0,(+_e.hrs||0)-engLoggedTime(d,_e.num)));
@@ -3669,7 +3690,7 @@ function bindActions(root){
 
           list.push(newItem);
           logAction(`Added ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,newItem)}`,lk2);
-          if(t==='flight'){fhFillEng(newItem);stampFlightEngine(d,newItem);recalcAirframeHours(d);recalcEngineHours(d);}
+          if(t==='flight'){fhFillTotal(newItem);fhFillEng(newItem);stampFlightEngine(d,newItem);recalcAirframeHours(d);recalcEngineHours(d);}
         }
       }
       sv(d);S.modal=null;S.edit=null;render();toast('Saved!');return;
