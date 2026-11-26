@@ -1014,7 +1014,7 @@ function wxLink(){
   return`<a class="wx-link" href="https://www.windy.com" target="_blank" rel="noopener noreferrer" title="Weather - opens Windy.com in a new tab" aria-label="Open Windy.com weather in a new tab"><svg width="60" height="60" viewBox="0 0 24 24" aria-hidden="true" stroke-linejoin="round"><circle cx="8" cy="8" r="3.1" fill="#d9a23f"/><path d="M8 2.3v1.2M2.3 8h1.2M4 4l.85.85M12 4l-.85.85M4 12l.85-.85" fill="none" stroke="#d9a23f" stroke-width="1.6" stroke-linecap="round"/><path d="M11 20H7.6a3.6 3.6 0 0 1-.3-7.2 5 5 0 0 1 9.5 1.3A3.2 3.2 0 0 1 16.4 20z" fill="#8fa6bd"/></svg></a>`;
 }
 const APP_VERSION='1.0';
-const APP_BUILD='2026.11.24-02';
+const APP_BUILD='2026.11.26-01';
 const SB_IC={
   brief:_sv('<path d="M8 3h8a1 1 0 0 1 1 1v16l-5-3-5 3V4a1 1 0 0 1 1-1z"/><path d="M9.5 8h5M9.5 11h5"/>'),
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
@@ -1389,6 +1389,7 @@ function normRRQ(d){
     else if(s!=='ARRIVED'&&s!=='CANCELLED')r.status='REQUESTED';
   });
   normAirframeHours(d);
+  applyFhFix(d);
   return d;
 }
 function ld(){try{const d=localStorage.getItem('uas11');return normRRQ(d?JSON.parse(d):defD())}catch(e){return defD()}}
@@ -3353,6 +3354,30 @@ function recalcAirframeHours(d){
     if(fhRound(+u.fh||0)!==t){u.fh=t;changed=true;}
   });
   if(changed)CHANGED_KEYS.add('uavs');
+}
+/* One-time airframe-hours correction, figures confirmed by the operator on
+   26-Nov-2026. These are TOTAL airframe hours: the baseline is worked back
+   from each figure so flights already in the log are not counted twice.
+   Marked per aircraft, so it applies exactly once and can never later undo
+   a flight logged after the correction. 1437 and 1442 are not listed and
+   are left untouched. */
+const FH_FIX_ID='2026-11-26';
+const FH_FIX={'1436':'27:44','1438':'07:34','1439':'06:30','1440':'07:55','1441':'03:18'};
+function applyFhFix(d){
+  if(!d||!Array.isArray(d.uavs))return d;
+  let hit=false;
+  d.uavs.forEach(u=>{
+    if(u.fhFix===FH_FIX_ID)return;                 // already corrected
+    const tgt=FH_FIX[String(u.tail==null?'':u.tail).trim()];
+    if(tgt===undefined)return;
+    const v=parseHHMM(tgt);
+    if(v===null||!isFinite(v))return;
+    u.fhBase=fhRound(Math.max(0,v-uavLoggedAir(d,u.tail)));
+    u.fhFix=FH_FIX_ID;
+    hit=true;
+  });
+  if(hit){recalcAirframeHours(d);CHANGED_KEYS.add('uavs');}
+  return d;
 }
 /* One-off split of today's stored total into baseline + what is already in
    the log, so no number on screen moves when this version is first opened. */
