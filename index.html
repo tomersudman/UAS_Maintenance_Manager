@@ -52,6 +52,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--f
 .ph{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;max-width:100%}
 .ph-title{font-size:24px;font-weight:700;color:#f0f4fa;letter-spacing:-.02em;line-height:1.1}
 .ph-sub{font-size:11.5px;color:var(--text3);margin-top:5px;letter-spacing:0;text-transform:none}
+.wx-link{display:inline-flex;align-items:center;line-height:0;text-decoration:none;flex:none;align-self:center;opacity:.86;transition:opacity .12s ease}
+.wx-link:hover{opacity:1}
+@media(max-width:820px){.wx-link{display:none}}
 .ph-r{display:flex;gap:5px;flex-wrap:wrap}
 .sr{display:grid;grid-template-columns:repeat(auto-fit,minmax(90px,1fr));gap:6px;margin-bottom:10px}
 .sc{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);padding:9px 11px}
@@ -187,24 +190,31 @@ table.dt-c td.ell-wide{max-width:340px;min-width:180px;overflow:hidden;text-over
 .bf-col{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;min-width:0}
 .bf-col-empty{display:flex;align-items:center;justify-content:center;padding:14px;background:transparent;border-style:dashed}
 .bf-col-empty .bf-empty{border:none;background:transparent;padding:6px}
-.bf-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:9px 11px;background:var(--th-bg);border-bottom:1px solid var(--border)}
-.bf-title{font-size:14px;font-weight:800;color:var(--text);letter-spacing:-.01em}
+.bf-head{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:10px 12px;background:var(--th-bg);border-bottom:1px solid var(--border)}
+.bf-title{font-size:13.5px;font-weight:700;color:var(--text)}
 .bf-site{font-size:10px;color:var(--text2);margin-left:auto}
-.bf-sec{padding:8px 11px}
+.bf-sec{padding:9px 12px}
 .bf-sec+.bf-sec{border-top:1px solid var(--border)}
-.bf-ch{font-size:8.5px;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
-.bf-row{display:flex;gap:8px;padding:3px 0;align-items:baseline}
-.bf-k{flex:0 0 74px;font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.03em;font-weight:600}
-.bf-v{flex:1;min-width:0;font-size:11.5px;color:var(--text);line-height:1.45;word-break:break-word}
-.bf-num{font-family:monospace;font-size:13px;color:var(--gold)}
+.bf-ch{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.09em;margin-bottom:7px}
+.bf-row{display:flex;gap:10px;padding:2.5px 0;align-items:baseline}
+.bf-k{flex:0 0 72px;font-size:10px;color:var(--text3);font-weight:500}
+.bf-v{flex:1;min-width:0;font-size:11.5px;color:var(--text);line-height:1.5;word-break:break-word}
+.bf-num{font-size:11.5px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
 .bf-d{font-size:10px;color:var(--text2)}
-.bf-na{font-size:11px;color:var(--text3);font-style:italic}
-.bf-sub{font-size:10px;color:var(--text2);margin-top:1px;line-height:1.4;white-space:pre-wrap}
-.bf-more{font-size:9.5px;color:var(--text3);margin-top:2px}
+.bf-na{font-size:11px;color:var(--text3)}
+.bf-sub{font-size:10px;color:var(--text2);margin-top:2px;line-height:1.45;white-space:pre-wrap}
+.bf-more{font-size:10px;color:var(--text3);margin-top:3px}
 .bf-pre{white-space:pre-wrap}
-.bf-pill{display:inline-block;font-size:10px;font-weight:600;padding:1px 7px;border-radius:9px}
-.bf-item{font-size:11px;padding:4px 7px;border-radius:5px;margin-bottom:3px;line-height:1.4}
-.bf-ok{font-size:11px;color:var(--green);font-weight:600}
+/* status reads from one dot + the trailing figure, never a filled block */
+.bf-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:6px;vertical-align:.5px;flex:none}
+.bf-fig{font-weight:600;font-variant-numeric:tabular-nums}
+.bf-st{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.bf-item{display:flex;gap:8px;align-items:baseline;font-size:11px;line-height:1.45;padding:3px 0 3px 9px;border-left:2px solid currentColor;color:var(--text3)}
+.bf-item+.bf-item{margin-top:3px}
+.bf-tag{flex:0 0 24px;font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.bf-ib{flex:1;min-width:0;color:var(--text)}
+.bf-ok{font-size:11px;color:var(--text3)}
+.bf-s0{color:var(--text3)}.bf-s1{color:var(--green)}.bf-s2{color:var(--yellow)}.bf-s3{color:var(--orange)}.bf-s4{color:var(--red)}
 @media(max-width:1100px){.bf-grid{grid-template-columns:1fr 1fr}}
 @media(max-width:820px){.bf-grid{grid-template-columns:1fr}.bf-k{flex-basis:70px}.bf-pick{flex:1;min-width:120px}}
 .sb-tg{width:1px;padding:2px 2px 2px 6px!important;text-align:center}
@@ -357,6 +367,23 @@ select:focus option:checked{background:#c9a84c;color:#1a2035}
 
 /* ═══ SIDEBAR SHELL ═══ */
 .shell{display:flex;min-height:100vh}
+.hb-tbl{width:100%;border-collapse:collapse;margin-top:2px}
+.hb-tbl th{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;font-weight:600;text-align:left;padding:5px 8px;border-bottom:1px solid var(--border2)}
+.hb-tbl td{padding:5px 8px;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--text)}
+.hb-tbl tr:last-child td{border-bottom:none}
+.hb-t{font-weight:700}
+.hb-l{color:var(--text2);font-variant-numeric:tabular-nums}
+.hb-tot{font-weight:700;font-variant-numeric:tabular-nums}
+.hb-in{width:74px;padding:4px 7px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg4);color:var(--text);font-family:var(--font);font-size:11.5px;font-variant-numeric:tabular-nums}
+.hb-in:focus{outline:none;border-color:var(--gold)}
+.hb-note{font-size:10.5px;color:var(--text3);margin-top:9px;line-height:1.5}
+.sb-site{padding:10px 12px;border-bottom:1px solid var(--border)}
+.site-sel{width:100%;padding:7px 9px;border-radius:var(--r);border:1px solid var(--border2);background:var(--bg4);color:var(--text);font-family:var(--font);font-size:12px;font-weight:600;cursor:pointer}
+.site-sel:hover{border-color:var(--gold3)}
+.site-sel.on{border-color:var(--gold3);color:var(--gold);background:var(--gold2)}
+.sb-site-sub{font-size:10px;color:var(--text3);margin-top:5px;padding-left:2px}
+.site-sel.nav-site{display:none;width:auto;max-width:148px;font-size:11px;padding:4px 7px;margin-right:6px}
+@media(max-width:820px){.site-sel.nav-site{display:inline-block}}
 .sidebar{width:200px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sb-brand{display:flex;align-items:center;gap:9px;padding:16px 14px 14px}
 .sb-brand img{height:30px;width:auto;filter:drop-shadow(0 0 6px rgba(56,139,253,.45))}
@@ -873,6 +900,51 @@ const TAB_GROUPS=[
   {h:'Logistics',ids:['ims']},
   {h:'System',ids:['settings']}
 ];
+/* ═══ SITE FILTER ═══ */
+const SITE_OPTS=[['ALL','All my sites'],['U-Tapao','U-Tapao'],['Songkhla','Songkhla']];
+let SITE=localStorage.getItem('uas_site')||'ALL';
+if(!SITE_OPTS.some(o=>o[0]===SITE))SITE='ALL';
+/* lists that carry their own location, and the field each one uses */
+const SITE_KEYS={uavs:'site',gcs:'site',gdt:'site',satcoms:'site',rrqs:'site',
+  engines:'loc',eparts:'loc',flt:'loc',gse_gens:'loc',gse_tools:'loc',opats:'loc',payloads:'loc',rmas:'loc',
+  flights:'base'};
+/* lists with no location of their own - inherited from the system they belong to */
+const SITE_VIA={faults:'uav',limits:'tail',defects:'tail',batteries:'uav'};
+/* tifs and sbs are deliberately absent: they are not tied to a base, so they always show */
+function siteNorm(v){return String(v==null?'':v).trim().toLowerCase();}
+function siteMatch(loc){
+  if(SITE==='ALL')return true;
+  const v=siteNorm(loc);
+  if(!v)return true;                       // no location recorded - never hide it
+  const s=siteNorm(SITE);
+  return v===s||v.indexOf(s+' ')===0;      // "U-Tapao Storage" counts as U-Tapao
+}
+/* where does the system behind a fault / limitation / defect / battery live? */
+function siteOfTail(tail){
+  const d=S.data,s=String(tail==null?'':tail).trim();
+  if(!s)return'';
+  const m=s.match(/^(UAV|GCS|GDT)\s+(.+)$/i);
+  const type=m?m[1].toUpperCase():'UAV',num=(m?m[2]:s).trim();
+  const list=type==='UAV'?(d.uavs||[]):type==='GCS'?(d.gcs||[]):(d.gdt||[]);
+  const o=list.find(x=>String(type==='UAV'?x.tail:x.unit).trim()===num);
+  return o?(o.site||o.loc||''):'';
+}
+/* read-only view of S.data for the selected site. Records are the SAME objects,
+   so edits made through it still write to the real record; only the lists differ. */
+function VD(){
+  const d=S.data;
+  if(SITE==='ALL')return d;
+  const o=Object.assign({},d);
+  for(const k in SITE_KEYS)if(Array.isArray(d[k]))o[k]=d[k].filter(r=>siteMatch(r[SITE_KEYS[k]]));
+  for(const k in SITE_VIA)if(Array.isArray(d[k]))o[k]=d[k].filter(r=>siteMatch(siteOfTail(r[SITE_VIA[k]])));
+  return o;
+}
+function siteSelect(cls){
+  const on=SITE!=='ALL';
+  return`<select class="site-sel ${cls||''}${on?' on':''}" aria-label="Show only systems at this site" title="Show only systems at this site">
+    ${SITE_OPTS.map(o=>`<option value="${o[0]}"${o[0]===SITE?' selected':''}>${o[1]}</option>`).join('')}
+  </select>`;
+}
 const _sv=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 let THEME=localStorage.getItem('uas_theme')||'dark';
 function applyTheme(){
@@ -937,8 +1009,12 @@ function themeIcon(){
     :'<circle cx="12" cy="12" r="4"/><path d="M12 3v1.6M12 19.4V21M5.6 5.6l1.1 1.1M17.3 17.3l1.1 1.1M3 12h1.6M19.4 12H21M5.6 18.4l1.1-1.1M17.3 6.7l1.1-1.1"/>';
   return `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 }
+/* Windy weather link - dashboard header, desktop only */
+function wxLink(){
+  return`<a class="wx-link" href="https://www.windy.com" target="_blank" rel="noopener noreferrer" title="Weather - opens Windy.com in a new tab" aria-label="Open Windy.com weather in a new tab"><svg width="60" height="60" viewBox="0 0 24 24" aria-hidden="true" stroke-linejoin="round"><circle cx="8" cy="8" r="3.1" fill="#d9a23f"/><path d="M8 2.3v1.2M2.3 8h1.2M4 4l.85.85M12 4l-.85.85M4 12l.85-.85" fill="none" stroke="#d9a23f" stroke-width="1.6" stroke-linecap="round"/><path d="M11 20H7.6a3.6 3.6 0 0 1-.3-7.2 5 5 0 0 1 9.5 1.3A3.2 3.2 0 0 1 16.4 20z" fill="#8fa6bd"/></svg></a>`;
+}
 const APP_VERSION='1.0';
-const APP_BUILD='2026.11.02-04';
+const APP_BUILD='2026.11.24-02';
 const SB_IC={
   brief:_sv('<path d="M8 3h8a1 1 0 0 1 1 1v16l-5-3-5 3V4a1 1 0 0 1 1-1z"/><path d="M9.5 8h5M9.5 11h5"/>'),
   home:_sv('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>'),
@@ -1155,6 +1231,12 @@ function openPopup(el,uid,lk,ek,type){
     else if(type==='number')v=v===''?'':+v;
     const oldV=unit[ek];
     unit[ek]=v;
+    if(lk==='uavs'&&ek==='fh'){
+      /* the figure typed is the TOTAL airframe hours - work back to the
+         baseline so the total lands exactly on what was entered */
+      unit.fhBase=fhRound(Math.max(0,(+v||0)-uavLoggedAir(S.data,unit.tail)));
+      recalcAirframeHours(S.data);
+    }
     if(lk==='engines'&&ek==='num'&&oldV&&oldV!==v){
       S.data.eparts.forEach(p=>{if(p.engSt===oldV)p.engSt=v;});
       CHANGED_KEYS.add('eparts');
@@ -1306,6 +1388,7 @@ function normRRQ(d){
     else if(s==='CANCELED')r.status='CANCELLED';
     else if(s!=='ARRIVED'&&s!=='CANCELLED')r.status='REQUESTED';
   });
+  normAirframeHours(d);
   return d;
 }
 function ld(){try{const d=localStorage.getItem('uas11');return normRRQ(d?JSON.parse(d):defD())}catch(e){return defD()}}
@@ -1315,7 +1398,7 @@ let S={tab:'home',data:ld(),modal:null,edit:null};
 
 /* ═══ OVERVIEW PAGE ═══ */
 function pgHome(){
-  const d=S.data;
+  const d=VD();
   const svc=d.uavs.filter(u=>u.svc==='YES').length;
   const part=d.uavs.filter(u=>u.svc==='PARTIALLY').length;
   const openTIF=d.tifs.filter(t=>t.status==='Open').length;
@@ -1562,8 +1645,8 @@ function pgHome(){
   /* ── Chart data for overview ── */
   const ovNow=new Date();
   const ovMonths=Array.from({length:12},(_,i)=>{const d=new Date(ovNow.getFullYear(),ovNow.getMonth()-11+i,1);return{label:d.toLocaleDateString('en-GB',{month:'short',year:'2-digit'}),key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}});
-  const ovFhByMonth=ovMonths.map(m=>S.data.flights.filter(f=>f.date&&f.date.startsWith(m.key)).reduce((s,f)=>s+(+f.total||0),0));
-  const ovFaultCats={};S.data.faults.forEach(f=>{const c=f.system||'Other';ovFaultCats[c]=(ovFaultCats[c]||0)+1});
+  const ovFhByMonth=ovMonths.map(m=>d.flights.filter(f=>f.date&&f.date.startsWith(m.key)).reduce((s,f)=>s+(+f.total||0),0));
+  const ovFaultCats={};d.faults.forEach(f=>{const c=f.system||'Other';ovFaultCats[c]=(ovFaultCats[c]||0)+1});
   const catLabels=Object.keys(ovFaultCats);
   const catVals=catLabels.map(c=>ovFaultCats[c]);
   const catColors=['#4a9eff','#2ea86b','#e05555','#4a90d9','#d97830','#9b59b6','#1abc9c'];
@@ -1672,7 +1755,7 @@ function pgHome(){
   return`
   ${fleetSum}
   <div class="ph"><div><div class="ph-title">Fleet readiness</div>
-  <div class="ph-sub">Updated ${TODAY.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div></div>
+  <div class="ph-sub">Updated ${TODAY.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div></div>${wxLink()}</div>
     <div class="ov-layout2">
     <div class="ov-zone ov-left">${uTbl}</div>
     <div class="ov-right">
@@ -1687,7 +1770,7 @@ function pgHome(){
 }
 
 function pgUAV(){
-  const d=S.data;
+  const d=VD();
   const uavs=d.uavs;
   const rows=[
     {lbl:'Serviceable',type:'svc'},
@@ -1747,7 +1830,7 @@ function pgUAV(){
   </div></div>`;
 }
 function pgGCS(){
-  const d=S.data;
+  const d=VD();
   function mkPvt(list,lk,rows,title,colHdr){
     let t=`<div class="ov-block"><div class="ov-block-hdr">${title}</div>
     <table class="pvt-lg"><thead><tr><th class="lh">S/N</th>
@@ -1777,7 +1860,7 @@ function pgGCS(){
   </div></div></div>`;
 }
 function pgEng(){
-  const d=S.data;
+  const d=VD();
   const checks=[
     {lbl:'UAV',type:'uav'},{lbl:'Location',type:'loc'},{lbl:'Serviceable',type:'svc'},
     {lbl:'Remarks',type:'remarks'},{lbl:'Engine Hours',type:'fh'},
@@ -1844,7 +1927,7 @@ function pgEng(){
   <div class="ov-grid">${tbl}</div></div></div>`;
 }
 function pgEParts(){
-  const d=S.data;
+  const d=VD();
   const cols=['Type','S/N','Engine S/N','UAV','Location','Svc','Item OH','Eng OH@Asm','Engine OH for next replacement','Date Acc.','Remarks',''];
 
   // Group by type for display
@@ -1880,7 +1963,7 @@ function pgEParts(){
   return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">Engine parts</div><div class="ph-sub">Click any cell to edit • HH:MM format for all hours</div></div></div>${html}</div></div>`;
 }
 function pgGSE(){
-  const d=S.data;
+  const d=VD();
   function editTd(val,ek,id,lk,type){return`<td class="ed" data-ek="${ek}" data-id="${id}" data-list="${lk}" data-type="${type}">${val}</td>`}
 
   /* FLT table */
@@ -1948,7 +2031,7 @@ function pgGSE(){
 }
 
 function pgPay(){
-  const d=S.data;
+  const d=VD();
   return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">Payloads</div><div class="ph-sub">Click any cell to edit</div></div></div>
   <div class="tbl-wrap"><div class="tbl-scroll"><table class="dt-c">
   <thead><tr><th>Type</th><th>S/N</th><th>UAV</th><th>Location</th><th>Purging 6M</th><th>Fork Desiccant 6M</th><th>Sphere Desiccant 12M</th><th>Svc</th><th>Remarks</th></tr></thead>
@@ -2031,7 +2114,7 @@ function pgSB(){
   </tbody></table></div></div></div></div>`;
 }
 function pgRMA(){
-  const rows=S.data.rmas;
+  const rows=VD().rmas;
   const open=rows.filter(r=>r.status!=='Closed'&&r.status!=='CANCELED').length;
   const daysBetween=(a,b)=>{if(!a)return null;const d1=new Date(a+'T12:00:00');const d2=b?new Date(b+'T12:00:00'):new Date();return Math.round((d2-d1)/86400000);};
   const tat=r=>{
@@ -2072,7 +2155,7 @@ function pgRMA(){
 }
 
 function pgRRQ(){
-  const rows=S.data.rrqs;
+  const rows=VD().rrqs;
   const open=rows.filter(r=>r.status!=='ARRIVED'&&r.status!=='CANCELLED').length;
   return`<div class="ov-center"><div class="page-wrap"><div class="ph"><div><div class="ph-title">RRQ follow-up</div><div class="ph-sub">${rows.length} total · ${open} open</div></div><button class="btn primary" data-a="rrq-bulk">+ New RRQ</button></div>
   <div class="search-bar">
@@ -2102,7 +2185,7 @@ function pgRRQ(){
   </tbody></table></div></div></div></div>`;
 }
 function pgFlt(){
-  const d=S.data;
+  const d=VD();
   const fl=d.flights;
   const fa=d.faults;
   const isRealFlight=f=>!!(f.to||f.lnd);
@@ -2333,8 +2416,8 @@ function briefCol(sel){
   const na='<span class="bf-na">—</span>';
   const dtxt=x=>x?`${esc2(x.lbl)}<span class="bf-d"> · ${fmtD(x.date)}</span>`:'<span class="bf-na">none recorded</span>';
   const duetxt=x=>{if(!x)return na;
-    const cl=x.days<0?'cr':x.days<=7?'co':x.days<=30?'cy':'cg';
-    return`<span class="bf-pill ${cl}">${esc2(x.lbl)} · ${fmtD(x.due)} · ${x.days<0?Math.abs(x.days)+'d OVR':x.days+'d'}</span>`;};
+    const cl=x.days<0?'bf-s4':x.days<=7?'bf-s3':x.days<=30?'bf-s2':'bf-s1';
+    return`<span class="${cl}"><span class="bf-dot"></span></span>${esc2(x.lbl)}<span class="bf-d"> · ${fmtD(x.due)}</span> <span class="bf-fig ${cl}">${x.days<0?Math.abs(x.days)+'d overdue':x.days+'d'}</span>`;};
 
   let out=`<div class="bf-col">
     <div class="bf-head"><span class="bf-title">${esc2(b.tailKey)}</span><span class="b ${svcCls}">${esc2(svc)}</span>${tailWarn(b.tailKey)}<span class="bf-site">${esc2(u.site||u.loc||'—')}</span></div>`;
@@ -2343,7 +2426,7 @@ function briefCol(sel){
   let s='';
   if(b.type==='UAV'){
     s+=r('Flight hrs',`<b class="bf-num">${fmtHHMM(+u.fh)||'00:00'}</b>`);
-    s+=r('Engine',e?`<b>${esc2(e.num||'—')}</b>${e.svc?` <span class="b ${e.svc==='YES'?'bg':e.svc==='NO'?'br':'by'}">${esc2(e.svc)}</span>`:''}`:'<span class="bf-na">none installed</span>');
+    s+=r('Engine',e?`<b>${esc2(e.num||'—')}</b>${e.svc?` <span class="bf-st ${e.svc==='YES'?'bf-s1':e.svc==='NO'?'bf-s4':'bf-s2'}"><span class="bf-dot"></span>${esc2(e.svc)}</span>`:''}`:'<span class="bf-na">none installed</span>');
     s+=r('Engine hrs',e?`<b class="bf-num">${fmtHHMM(+e.hrs)||'00:00'}</b>`:na);
   }
   s+=r('Remarks',u.remarks?`<span class="bf-pre">${esc2(u.remarks)}</span>`:na);
@@ -2359,24 +2442,24 @@ function briefCol(sel){
   const f0=b.faults[0],sb0=b.sbDone[0],t0=b.tifs[0];
   let s3=r('Last fault',f0?`<b>${esc2(f0.system||'—')}</b>${f0.subsystem?' / '+esc2(f0.subsystem):''}<span class="bf-d"> · ${fmtD(f0.date)}</span>${f0.remarks?`<div class="bf-sub">${esc2(f0.remarks)}</div>`:''}${b.faults.length>1?`<div class="bf-more">+${b.faults.length-1} earlier</div>`:''}`:'<span class="bf-na">none</span>');
   s3+=r('Last SB',sb0?`<b>${esc2(sb0.num||'—')}</b><span class="bf-d"> · ${fmtD(sb0.date)}</span>${sb0.desc?`<div class="bf-sub">${esc2(sb0.desc)}</div>`:''}`:'<span class="bf-na">none</span>');
-  if(b.sbPending.length)s3+=r('SB open',`<span class="bf-pill cr">${b.sbPending.length} outstanding</span><div class="bf-sub">${b.sbPending.map(x=>esc2(x.num||'?')).join(', ')}</div>`);
-  s3+=r('Last TIF',t0?`<b>#${esc2(t0.num||'—')}</b> ${badge(t0.status||'Open',String(t0.status)==='Closed'?'bg':'br')}<span class="bf-d"> · ${fmtD(t0.date)}</span>${t0.desc?`<div class="bf-sub">${esc2(t0.desc)}</div>`:''}${b.tifs.length>1?`<div class="bf-more">+${b.tifs.length-1} more</div>`:''}`:'<span class="bf-na">none</span>');
+  if(b.sbPending.length)s3+=r('SB open',`<span class="bf-fig bf-s4">${b.sbPending.length}</span> outstanding<div class="bf-sub">${b.sbPending.map(x=>esc2(x.num||'?')).join(', ')}</div>`);
+  s3+=r('Last TIF',t0?`<b>#${esc2(t0.num||'—')}</b> <span class="bf-st ${String(t0.status)==='Closed'?'bf-s0':'bf-s4'}">${esc2(t0.status||'Open')}</span><span class="bf-d"> · ${fmtD(t0.date)}</span>${t0.desc?`<div class="bf-sub">${esc2(t0.desc)}</div>`:''}${b.tifs.length>1?`<div class="bf-more">+${b.tifs.length-1} more</div>`:''}`:'<span class="bf-na">none</span>');
   out+=`<div class="bf-sec"><div class="bf-ch">History</div>${s3}</div>`;
 
   /* restrictions */
   let s4='';
-  if(b.limits.length)s4+=b.limits.map(l=>`<div class="bf-item cy">⚠️ ${esc2(l.cond||'—')}<span class="bf-d"> · ${fmtD(l.date)}</span></div>`).join('');
+  if(b.limits.length)s4+=b.limits.map(l=>`<div class="bf-item bf-s2"><span class="bf-tag">Lim</span><div class="bf-ib">${esc2(l.cond||'—')}<span class="bf-d"> · ${fmtD(l.date)}</span></div></div>`).join('');
   if(b.defects.length)s4+=b.defects.map(x=>{
     const dd=x.expiry?du(x.expiry):null;
-    const cl=dd!==null&&dd<0?'cr':dd!==null&&dd<=7?'co':String(x.status)==='Open'?'cy':'cg';
-    const exp=x.expiry?(dd<0?` · ${Math.abs(dd)}d EXPIRED`:` · exp ${fmtD(x.expiry)} (${dd}d)`):'';
-    return`<div class="bf-item ${cl}">🔧 ${esc2(x.defect||'—')}<span class="bf-d"> · ${esc2(x.status||'')}${exp}</span>${x.note?`<div class="bf-sub">${esc2(x.note)}</div>`:''}</div>`;}).join('');
-  if(!s4)s4=`<div class="bf-ok">✓ none open</div>`;
+    const cl=dd!==null&&dd<0?'bf-s4':dd!==null&&dd<=7?'bf-s3':String(x.status)==='Open'?'bf-s2':'bf-s0';
+    const exp=!x.expiry?'':dd<0?` <span class="bf-fig ${cl}">${Math.abs(dd)}d expired</span>`:`<span class="bf-d"> · expires ${fmtD(x.expiry)} (${dd}d)</span>`;
+    return`<div class="bf-item ${cl}"><span class="bf-tag">Def</span><div class="bf-ib">${esc2(x.defect||'—')}<span class="bf-d"> · ${esc2(x.status||'')}</span>${exp}${x.note?`<div class="bf-sub">${esc2(x.note)}</div>`:''}</div></div>`;}).join('');
+  if(!s4)s4=`<div class="bf-ok">None open</div>`;
   out+=`<div class="bf-sec"><div class="bf-ch">Limitations &amp; deferred defects</div>${s4}</div>`;
   return out+`</div>`;
 }
 function pgBrief(){
-  const d=S.data;
+  const d=VD();
   const sel=S.brief||(S.brief={uav:'',gcs:'',gdt:''});
   const mk=(id,label,list,cur)=>`<div class="fg bf-pick"><label>${label}</label><select id="${id}" class="filt-sel">
       <option value="">— none —</option>
@@ -2475,7 +2558,7 @@ function renderTailAlerts(){
   </div></div>`;
 }
 function limRows(){
-  const d=S.data;
+  const d=VD();
   const rows=(d.limits||[]).slice().sort((a,b)=>String(a.tail||'').localeCompare(String(b.tail||''))||String(a.date||'').localeCompare(String(b.date||'')));
   let prev=null;
   return rows.map(l=>{
@@ -2489,7 +2572,7 @@ function limRows(){
   </tr>`;}).join('');
 }
 function defRows(){
-  const d=S.data;
+  const d=VD();
   const rows=(d.defects||[]).slice().sort((a,b)=>String(a.tail||'').localeCompare(String(b.tail||''))||String(a.date||'').localeCompare(String(b.date||'')));
   let prev=null;
   return rows.map(x=>{
@@ -2509,7 +2592,7 @@ function defRows(){
 }
 
 function batteryRows(){
-  const d=S.data,ed=canAdmin()||(USER&&USER.role==='OPERATOR');
+  const d=VD(),ed=canAdmin()||(USER&&USER.role==='OPERATOR');
   return (d.batteries||[]).map(b=>`<tr data-search="${[b.sn,b.uav,b.remarks].filter(Boolean).join(' ').toLowerCase().replace(/"/g,'&quot;')}">
     <td class="ed mono bld" data-ek="sn" data-id="${b.id}" data-list="batteries" data-type="text">${b.sn||'—'}</td>
     <td class="ed" data-ek="uav" data-id="${b.id}" data-list="batteries" data-type="select_uav">${b.uav||'—'}</td>
@@ -2747,7 +2830,7 @@ function exportExcel(){
   XLSX.writeFile(wb,`UAS_Export_${new Date().toISOString().slice(0,10)}.xlsx`);toast('Excel exported!');
 }
 function backup(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(S.data,null,2)],{type:'application/json'}));a.download=`UAS_Backup_${new Date().toISOString().slice(0,10)}.json`;a.click();toast('Backup saved!');}
-function restore(file){const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.uavs){S.data=d;sv(d);logAction('Restored backup');render();toast('Restored!')}else alert('Invalid backup.')}catch(err){alert('Error: '+err.message)}};rd.readAsText(file);}
+function restore(file){const rd=new FileReader();rd.onload=e=>{try{const d=JSON.parse(e.target.result);if(d.uavs){S.data=normRRQ(d);sv(S.data);logAction('Restored backup');render();toast('Restored!')}else alert('Invalid backup.')}catch(err){alert('Error: '+err.message)}};rd.readAsText(file);}
 
 /* ═══ MAIN RENDER & BIND ═══ */
 function tpClose(){
@@ -2888,6 +2971,7 @@ function render(){
   const sidebar=`
     <aside class="sidebar">
       <div class="sb-brand"><img src="${LOGO}" alt="H900"><div><div class="sb-brand-t">OSPREY WINGMAN</div><div class="sb-brand-s">Maintenance Manager</div></div></div>
+      <div class="sb-site">${siteSelect()}<div class="sb-site-sub">${(()=>{const v=VD();return `${(v.uavs||[]).length} UAV · ${(v.gcs||[]).length} GCS · ${(v.gdt||[]).length} GDT`})()}</div></div>
       ${TAB_GROUPS.map(g=>`<div class="sb-h">${g.h}</div>${g.ids.map(id=>sbItem(TABS.find(t=>t.id===id))).join('')}`).join('')}
       <div class="sb-foot">
         ${USER?`<div class="sb-user">${USER.name}</div>
@@ -2913,6 +2997,7 @@ function render(){
       <div class="nav-scroll"><div style="display:flex">${TABS.map(t=>`<div class="tab${S.tab===t.id?' on':''}" data-tab="${t.id}">${t.l}</div>`).join('')}</div></div>
       <div class="nav-btns">
         ${USER?`<div style="text-align:right;margin-right:8px;line-height:1.3"><div style="font-size:12px;font-weight:600;color:var(--text)">Welcome, ${USER.name}</div><div style="display:flex;align-items:center;justify-content:flex-end;gap:7px;margin-top:2px"><span style="display:inline-flex;align-items:center;gap:4px;font-size:9px;padding:1px 8px;border-radius:10px;border:1px solid var(--green3);color:var(--green);background:var(--green2)"><span class="sync-dot syncdot" style="background:var(--text3);margin-right:0"></span><span class="synclbl">Live</span></span><span style="font-size:10px;font-weight:600;color:${USER.role==='ADMIN'?'#388bfd':USER.role==='OPERATOR'?'var(--green)':'var(--text3)'}">${USER.role.charAt(0)+USER.role.slice(1).toLowerCase()}</span></div></div>`:`<span style="display:inline-flex;align-items:center;gap:4px;font-size:10px;padding:2px 9px;border-radius:10px;border:1px solid var(--green3);color:var(--green);background:var(--green2);margin-right:4px"><span class="sync-dot syncdot" style="background:var(--text3);margin-right:0"></span><span class="synclbl">Live</span></span>`}
+        ${siteSelect('nav-site')}
         <input type="file" id="ri" accept=".json" style="display:none">
         <button class="nbtn" data-a="toggle-theme" title="Light / dark mode" style="display:inline-flex;align-items:center;justify-content:center">${themeIcon()}</button>${USER?'<button class="nbtn blo" title="Logout">⎋</button>':''}
       </div>
@@ -2964,6 +3049,16 @@ function pgSettings(){
        <button class="btn primary" id="st-report" style="margin-left:auto">⬇ Download Word Report</button>
      </div>`);
   const adminCards=canAdmin()?
+    (canAdmin()?card('🛩️','Airframe Hours',
+      'Total airframe hours = the hours the aircraft had before it was logged in Wingman, plus every airborne hour in the flight log. Engine runs and taxi tests are not counted. Change the "before Wingman" figure if an aircraft arrived with hours that are not reflected below.',
+      `<table class="hb-tbl"><thead><tr><th>Tail</th><th>Before Wingman</th><th>Logged here</th><th>Total airframe</th></tr></thead><tbody>
+      ${(S.data.uavs||[]).map(u=>{const lg=uavLoggedAir(S.data,u.tail);return `<tr>
+        <td class="hb-t">${esc2(u.tail)}</td>
+        <td><input class="hb-in" data-tail="${esc2(u.tail)}" value="${fmtHHMM(+u.fhBase||0)}" placeholder="0:00"></td>
+        <td class="hb-l">${lg>0?fmtHHMM(lg):'—'}</td>
+        <td class="hb-tot">${fmtHHMM(+u.fh||0)}</td></tr>`}).join('')}
+      </tbody></table>
+      <div class="hb-note">Enter hours as H:MM. The total updates as soon as you leave the field, and from here on every flight you log is added automatically.</div>`):'')+
     card('💾','Backup &amp; Restore','Save a complete backup of all data to a file on your device, or restore from a previous backup. Restoring overwrites all current data and syncs it to the cloud.',
     '<button class="btn primary" id="st-backup">💾 Download Backup</button><button class="btn" id="st-restore">📂 Restore from File</button><input type="file" id="st-ri" accept=".json" style="display:none">')+
     card('📊','Excel Export','Export all maintenance tables to an Excel-compatible spreadsheet.',
@@ -3226,6 +3321,70 @@ function applyFlightType(){
   const c=document.getElementById('fll-count');
   if(c)c.textContent=shown+'/'+total+' shown';
 }
+/* A logged flight contributes its airborne time to the UAV total and its
+   engine time to the installed engine. Applied with sign +1 when a flight is
+   added, -1 when it is deleted, and old -1 / new +1 on an edit, so the totals
+   stay in step with the log in both directions. Existing hours an aircraft
+   arrived with are untouched - this only ever adds or removes the delta. */
+function fhSameUnit(a,b){
+  const n=v=>String(v==null?'':v).trim().replace(/^(UAV|Engine)\s+/i,'');
+  return n(a)!==''&&n(a)===n(b);
+}
+/* every hour value in the app comes from HH:MM, so snapping to the minute
+   grid keeps stored totals exact and stops float dust accumulating */
+function fhRound(v){return Math.round(v*60)/60;}
+/* ── AIRFRAME HOURS ───────────────────────────────────────────────────────
+   Total airframe hours = fhBase + every airborne hour in the flight log for
+   that tail. fhBase is what the aircraft had before it was logged here (the
+   Israel hours). The total is RECOMPUTED from those two parts, never nudged
+   up and down, so it cannot drift: correct or delete a flight and the total
+   fixes itself immediately.
+   Engine hours work differently on purpose - an engine can be moved between
+   airframes, so engine time is credited to whichever engine was installed at
+   the time of that flight, and stays with it after a swap.               */
+function uavLoggedAir(d,tail){
+  return (d&&d.flights||[]).reduce((s,f)=>fhSameUnit(f.uav,tail)?s+(+f.total||0):s,0);
+}
+function recalcAirframeHours(d){
+  if(!d||!Array.isArray(d.uavs))return;
+  let changed=false;
+  d.uavs.forEach(u=>{
+    const t=fhRound((+u.fhBase||0)+uavLoggedAir(d,u.tail));
+    if(fhRound(+u.fh||0)!==t){u.fh=t;changed=true;}
+  });
+  if(changed)CHANGED_KEYS.add('uavs');
+}
+/* One-off split of today's stored total into baseline + what is already in
+   the log, so no number on screen moves when this version is first opened. */
+function normAirframeHours(d){
+  if(!d||!Array.isArray(d.uavs))return d;
+  d.uavs.forEach(u=>{
+    if(u.fhBase===undefined||u.fhBase===null||u.fhBase==='')
+      u.fhBase=fhRound(Math.max(0,(+u.fh||0)-uavLoggedAir(d,u.tail)));
+  });
+  recalcAirframeHours(d);
+  return d;
+}
+/* engine time only - airframe hours are derived, see above */
+function applyFlightHours(rec,sign){
+  if(!rec)return;
+  const d=S.data,sg=sign<0?-1:1;
+  const eng=+rec.engTot||0;
+  if(eng){
+    const e=(d.engines||[]).find(x=>fhSameUnit(rec.uav,x.uav));
+    if(e){
+      e.hrs=fhRound(Math.max(0,(+e.hrs||0)+sg*eng));
+      CHANGED_KEYS.add('engines');
+      logAction(`Engine ${e.num} ${sg<0?'-':'+'}${fmtHHMM(eng)} engine time (flight ${rec.date||''})`,'engines');
+    }
+  }
+}
+/* fill engTot from engine start/stop when the form did not already compute it */
+function fhFillEng(r){
+  if(!r||!r.est||!r.esd||(+r.engTot))return;
+  const s=parseHHMM(r.est),e=parseHHMM(r.esd);
+  if(s!==null&&e!==null)r.engTot=((e-s)+24)%24;
+}
 function lastRunDate(e){
   if(!e||!e.uav)return '';
   const fl=(S.data.flights||[]).filter(f=>String(f.uav||'')===String(e.uav)&&f.date);
@@ -3391,7 +3550,12 @@ function bindActions(root){
       if(list){
         if(S.edit&&S.edit.id){
           const idx=list.findIndex(r=>r.id===S.edit.id);
-          if(idx>=0){list[idx]={...S.edit,...fd};logAction(`Edited ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,list[idx])}`,lk2);}
+          if(idx>=0){
+            const _old=S.edit;
+            list[idx]={...S.edit,...fd};
+            logAction(`Edited ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,list[idx])}`,lk2);
+            if(t==='flight'){fhFillEng(list[idx]);applyFlightHours(_old,-1);applyFlightHours(list[idx],1);recalcAirframeHours(d);}
+          }
         }
         else{
           const newItem={id:nid(list),...fd};
@@ -3400,19 +3564,7 @@ function bindActions(root){
 
           list.push(newItem);
           logAction(`Added ${LIST_NAMES[lk2]||lk2} ${unitLabel(lk2,newItem)}`,lk2);
-          if(t==='flight'&&newItem.est&&newItem.esd){
-            const _st=parseHHMM(newItem.est),_sd=parseHHMM(newItem.esd);
-            if(_st!==null&&_sd!==null){
-              const _dur=+newItem.engTot||((_sd-_st)+24)%24;
-              newItem.engTot=_dur;
-              const _en=d.engines.find(e=>e.uav===newItem.uav);
-              if(_dur>0&&_en){
-                _en.hrs=(+_en.hrs||0)+_dur;
-                CHANGED_KEYS.add('engines');
-                logAction(`Engine ${_en.num} +${fmtHHMM(_dur)} engine time (flight ${newItem.date||''})`,'engines');
-              }
-            }
-          }
+          if(t==='flight'){fhFillEng(newItem);applyFlightHours(newItem,1);recalcAirframeHours(d);}
         }
       }
       sv(d);S.modal=null;S.edit=null;render();toast('Saved!');return;
@@ -3509,6 +3661,7 @@ function bindActions(root){
       const lk=DMAP[a],list=d[lk],idx=list.findIndex(r=>r.id===id);
       if(idx>=0&&confirm('Delete?')){
         const removed=list[idx];list.splice(idx,1);
+        if(lk==='flights'){applyFlightHours(removed,-1);recalcAirframeHours(d);}
         logAction(`Deleted ${LIST_NAMES[lk]||lk} ${unitLabel(lk,removed)}`,lk);
         sv(d);render();toast('Deleted.','r');
       }
@@ -3528,6 +3681,20 @@ function bindAll(){
   const stR=document.getElementById('st-report');if(stR)stR.addEventListener('click',downloadWordReport);
   const stB=document.getElementById('st-backup');if(stB)stB.addEventListener('click',backup);
   const stE=document.getElementById('st-excel');if(stE)stE.addEventListener('click',exportExcel);
+  document.querySelectorAll('.hb-in').forEach(el=>{
+    if(el._hb)return;el._hb=true;
+    el.addEventListener('change',()=>{
+      const u=(S.data.uavs||[]).find(x=>String(x.tail)===el.dataset.tail);
+      if(!u)return;
+      const v=parseHHMM(el.value);
+      const nb=fhRound(Math.max(0,v===null?0:v));
+      if(nb===fhRound(+u.fhBase||0)){render();return;}
+      const before=+u.fh||0;
+      u.fhBase=nb;recalcAirframeHours(S.data);
+      logAction(`UAV ${u.tail} airframe hours ${fmtHHMM(before)} → ${fmtHHMM(+u.fh||0)}`,'uavs');
+      sv(S.data);render();toast('Saved!');
+    });
+  });
   const stRs=document.getElementById('st-restore'),stRi=document.getElementById('st-ri');
   if(stRs&&stRi){stRs.addEventListener('click',()=>stRi.click());stRi.addEventListener('change',e=>{if(e.target.files[0])restore(e.target.files[0])});}
   if(bb)bb.addEventListener('click',backup);
@@ -3572,6 +3739,13 @@ function bindAll(){
     if(el2&&!el2._bf){el2._bf=true;el2.addEventListener('change',()=>{
       if(!S.brief)S.brief={uav:'',gcs:'',gdt:''};
       S.brief[key]=el2.value;render();});}
+  });
+  document.querySelectorAll('.site-sel').forEach(el=>{
+    if(el._site)return;el._site=true;
+    el.addEventListener('change',()=>{
+      SITE=el.value;try{localStorage.setItem('uas_site',SITE)}catch(e){}
+      render();
+    });
   });
   const bfClr=document.getElementById('bf-clear');
   if(bfClr&&!bfClr._bf){bfClr._bf=true;bfClr.addEventListener('click',()=>{S.brief={uav:'',gcs:'',gdt:''};render();});}
